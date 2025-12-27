@@ -1,6 +1,6 @@
 /**
  * MetaSpace Research Edition - Frontend Controller
- * Verzió: 1.4.4 (Fixed Nominal Visualization)
+ * Verzió: 1.4.5 (Enhanced Log with Fault Detection)
  */
 
 let chartInstance = null;
@@ -48,7 +48,6 @@ function runSimulation() {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
-            // JAVÍTÁS: A chart most már megkapja a scenario-t is döntési alapnak
             renderResearchChart(data.data, scenario);
             updateTechnicalNarrative(data.data, scenario);
             
@@ -75,11 +74,10 @@ function renderResearchChart(results, scenario) {
     const totalDays = results.days;
     const labels = Array.from({length: totalDays}, (_, i) => i + 1);
     
-    // JAVÍTÁS: Ha a szcenárió NOMINAL, nem generálunk mesterséges zuhanást
     const isNominal = (scenario === 'nominal');
 
     const traditionalData = labels.map(day => {
-        if (isNominal) return 97 + Math.random() * 3; // Zajostól nominális
+        if (isNominal) return 97 + Math.random() * 3; 
         if (day < failDay) {
             return 97 + Math.random() * 3;
         } else {
@@ -89,7 +87,7 @@ function renderResearchChart(results, scenario) {
     });
 
     const metaSpaceData = labels.map(day => {
-        if (isNominal) return 100; // Stabil 100% Nominális módban
+        if (isNominal) return 100; 
         if (day < failDay) return 100;
         return 0; 
     });
@@ -217,7 +215,7 @@ function renderComponentGrid(components) {
 function startDataStream() {
     const streamBox = document.getElementById('bio-stream'); 
     if (!streamBox) return;
-    const messages = [
+    const nominalMessages = [
         "[CHECK] Energy_Invariant (P_sol - P_load > 0) -> VERIFIED",
         "[CHECK] Momentum_Conservation (dL/dt = T_ext) -> VERIFIED",
         "[SOLVER] Z3 Constraint Check: SATISFIABLE",
@@ -229,8 +227,9 @@ function startDataStream() {
         "[GNC] Star Tracker Quaternions: VALID"
     ];
     streamBox.innerHTML = "";
+    logLineCount = 0;
     simulationInterval = setInterval(() => {
-        const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+        const randomMsg = nominalMessages[Math.floor(Math.random() * nominalMessages.length)];
         const now = new Date();
         const timeStr = now.toLocaleTimeString('en-US', { hour12: false }) + "." + Math.floor(now.getMilliseconds()/10);
         const line = document.createElement('div');
@@ -246,7 +245,30 @@ function startDataStream() {
 function stopDataStream() {
     if (simulationInterval) clearInterval(simulationInterval);
     const streamBox = document.getElementById('bio-stream');
+    const scenario = document.getElementById('scenario-select').value;
+    
     if (streamBox) {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', { hour12: false }) + "." + Math.floor(now.getMilliseconds()/10);
+
+        if (scenario !== 'nominal') {
+            const errorLine = document.createElement('div');
+            errorLine.className = 'log-entry';
+            errorLine.innerHTML = `
+                <span class="log-timestamp">[${timeStr}]</span> 
+                <span style="color:#ff2a2a; font-weight:bold;">[CRITICAL] INVARIANT VIOLATION: Energy_Budget FAILURE</span>
+            `;
+            streamBox.appendChild(errorLine);
+
+            const isolationLine = document.createElement('div');
+            isolationLine.className = 'log-entry';
+            isolationLine.innerHTML = `
+                <span class="log-timestamp">[${timeStr}]</span> 
+                <span style="color:#00f3ff;">[ACTION] MetaSpace: ISOLATING FAULTY COMPONENT...</span>
+            `;
+            streamBox.appendChild(isolationLine);
+        }
+
         const line = document.createElement('div');
         line.className = 'log-entry';
         line.innerHTML = `<span class="log-timestamp">[END]</span> <span style="color:#66fcf1; font-weight:bold;">SIMULATION COMPLETE. DATA READY.</span>`;
