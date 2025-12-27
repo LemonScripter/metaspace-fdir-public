@@ -23,6 +23,10 @@ def index():
     """A fő Dashboard betöltése"""
     return render_template('index.html')
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
 @app.route('/api/health', methods=['GET'])
 def health_check():
     """Egyszerű ellenőrzés, hogy fut-e a szerver"""

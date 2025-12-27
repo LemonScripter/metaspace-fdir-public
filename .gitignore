@@ -9,6 +9,8 @@ env/
 # --- METASPACE BIZTONSÁGI ENKLÁVÉ (SOHA NE TÖLTSD FEL!) ---
 # 1. A nyers titkos fájlok mappája
 raw_secrets/
+results/
+docs/
 
 # 2. A mesterkulcs (EZ A LEGFONTOSABB!)
 *.key
@@ -16,6 +18,7 @@ metaspace_master.key
 
 # 3. Környezeti változók (ha lesznek)
 .env
+
 
 # --- EGYÉB ---
 .DS_Store

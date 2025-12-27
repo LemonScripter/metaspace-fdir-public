@@ -2,11 +2,81 @@
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MetaSpace | Mission Assurance Simulator</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* DASHBOARD SPECIFIC STYLES */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .container {
+            flex: 1; /* Ez biztosítja, hogy a tartalom kitöltse a teret a footer előtt */
+        }
         .chart-container { position: relative; height: 300px; width: 100%; }
+
+        /* FOOTER STYLES (Ugyanaz, mint az About oldalon) */
+        footer {
+            margin-top: 40px;
+            padding: 40px;
+            border-top: 1px solid #333;
+            background: #020406;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .footer-grid {
+            max-width: 1400px; /* Szélesebb a dashboard miatt */
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 40px;
+        }
+
+        .footer-col h4 {
+            color: #fff;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .footer-col a {
+            display: block;
+            color: #8892b0;
+            text-decoration: none;
+            margin-bottom: 10px;
+            transition: color 0.3s;
+        }
+
+        .footer-col a:hover { color: #66fcf1; }
+
+        .contact-btn {
+            background: transparent;
+            border: 1px solid #66fcf1;
+            color: #66fcf1;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .contact-btn:hover { background: #66fcf1; color: #000; }
+
+        .copyright-bar {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.8em;
+        }
+
+        @media (max-width: 768px) {
+            .footer-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -16,6 +86,9 @@
             <small>Deterministic Mission Assurance Simulator</small>
         </div>
         <div class="system-status">
+            <a href="/about" style="color: #66fcf1; text-decoration: none; border: 1px solid #66fcf1; padding: 5px 15px; border-radius: 4px; font-size: 12px; margin-right: 15px; transition: all 0.3s;">
+                ℹ️ Mi ez? / About
+            </a>
             <span class="status-indicator online"></span> CORE V1.4: ONLINE
         </div>
     </header>
@@ -83,6 +156,47 @@
             </div>
         </main>
     </div>
+
+    <footer>
+        <div class="footer-grid">
+            
+            <div class="footer-col">
+                <h4>Hasznos linkek</h4>
+                <a href="https://metaspace.bio" target="_blank">MetaSpace.bio &rarr;</a>
+                <a href="https://lemonscript.info" target="_blank">LemonScript.info &rarr;</a>
+                <a href="https://github.com/lemonscripter/MetaSpace-Drone-Shield" target="_blank">Dokumentáció &rarr;</a>
+            </div>
+
+            <div class="footer-col">
+                <h4>Kapcsolat</h4>
+                <p style="color:#8892b0; margin-bottom:15px;">Technológiai kérdések és befektetés:</p>
+                <button class="contact-btn" onclick="openMail()">
+                    ✉️ Email küldése
+                </button>
+            </div>
+
+            <div class="footer-col">
+                <h4>Rendszerinfó</h4>
+                <p style="color:#666; font-size: 0.9em; line-height: 1.5;">
+                    Core Version: v1.4 (Stable)<br>
+                    Logic Engine: Python 3.10<br>
+                    Physics: Landsat-9 Model
+                </p>
+            </div>
+        </div>
+
+        <div class="copyright-bar">
+            <strong>Copyright © 2025 Citrom Media SRL (LemonScript Laboratory).</strong> All rights reserved.
+        </div>
+    </footer>
     <script src="/static/js/main.js"></script>
+    <script>
+        // Spam védelem
+        function openMail() {
+            const user = "hello";
+            const domain = "metaspace.bio";
+            window.location.href = "mailto:" + user + "@" + domain;
+        }
+    </script>
 </body>
 </html>
