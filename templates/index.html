@@ -1,124 +1,143 @@
 <!DOCTYPE html>
-<html lang="hu">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MetaSpace | Mission Assurance Simulator</title>
+    <title>MetaSpace | Deterministic FDIR Simulator</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* DASHBOARD SPECIFIC STYLES */
-        body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+        /* --- KUTATÓI KIEGÉSZÍTÉSEK --- */
+        
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
         }
-        .container {
-            flex: 1; /* Ez biztosítja, hogy a tartalom kitöltse a teret a footer előtt */
+        .modal-content {
+            background: #0f1820; border: 1px solid #66fcf1;
+            padding: 40px; max-width: 800px; width: 90%;
+            box-shadow: 0 0 50px rgba(102, 252, 241, 0.2);
+            position: relative;
         }
-        .chart-container { position: relative; height: 300px; width: 100%; }
+        .modal-header { border-bottom: 1px solid #333; margin-bottom: 20px; padding-bottom: 10px; }
+        .modal-close {
+            position: absolute; top: 20px; right: 20px;
+            color: #66fcf1; cursor: pointer; font-size: 24px; font-weight: bold;
+        }
+        
+        .doc-bar {
+            background: #0b1219; border-bottom: 1px solid #333;
+            padding: 10px 40px; display: flex; gap: 20px; font-size: 0.85em; flex-wrap: wrap;
+        }
+        .doc-link { color: #8892b0; text-decoration: none; border-bottom: 1px dotted #555; transition: all 0.3s; }
+        .doc-link:hover { color: #66fcf1; border-bottom: 1px solid #66fcf1; }
 
-        /* FOOTER STYLES (Ugyanaz, mint az About oldalon) */
-        footer {
-            margin-top: 40px;
-            padding: 40px;
-            border-top: 1px solid #333;
-            background: #020406;
-            font-size: 0.9em;
-            color: #666;
-        }
+        .log-entry { font-family: 'Courier New', monospace; font-size: 11px; border-bottom: 1px solid #222; padding: 2px 0; }
+        .log-timestamp { color: #555; margin-right: 10px; }
+        .log-type { font-weight: bold; margin-right: 10px; }
+        .log-msg { color: #ccc; }
+        .log-crit { color: #e74c3c; }
+        .log-ok { color: #2ecc71; }
 
-        .footer-grid {
-            max-width: 1400px; /* Szélesebb a dashboard miatt */
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 40px;
-        }
-
-        .footer-col h4 {
-            color: #fff;
-            margin-bottom: 20px;
-            font-size: 1.1em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .footer-col a {
-            display: block;
-            color: #8892b0;
-            text-decoration: none;
-            margin-bottom: 10px;
-            transition: color 0.3s;
+        .placeholder-state {
+            text-align: center; padding: 50px; color: #555; border: 2px dashed #333;
+            height: 100%; display: flex; flex-direction: column; justify-content: center;
         }
 
+        body { display: flex; flex-direction: column; min-height: 100vh; margin: 0; background: #050a10; color: #c5c6c7; font-family: 'Roboto', sans-serif; }
+        .container { flex: 1; display: flex; max-width: 1600px; margin: 0 auto; width: 100%; }
+        .chart-container { position: relative; height: 350px; width: 100%; }
+        
+        footer { margin-top: 40px; padding: 40px; border-top: 1px solid #333; background: #020406; font-size: 0.9em; color: #666; }
+        .footer-grid { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 40px; }
+        .footer-col h4 { color: #fff; margin-bottom: 20px; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
+        .footer-col a { display: block; color: #8892b0; text-decoration: none; margin-bottom: 10px; transition: color 0.3s; }
         .footer-col a:hover { color: #66fcf1; }
-
-        .contact-btn {
-            background: transparent;
-            border: 1px solid #66fcf1;
-            color: #66fcf1;
-            padding: 8px 15px;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.3s;
-        }
-
+        .contact-btn { background: transparent; border: 1px solid #66fcf1; color: #66fcf1; padding: 8px 15px; cursor: pointer; border-radius: 4px; transition: all 0.3s; }
         .contact-btn:hover { background: #66fcf1; color: #000; }
-
-        .copyright-bar {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            font-size: 0.8em;
-        }
-
-        @media (max-width: 768px) {
-            .footer-grid { grid-template-columns: 1fr; }
+        .copyright-bar { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.8em; }
+        
+        @media (max-width: 768px) { 
+            .footer-grid { grid-template-columns: 1fr; } 
+            .container { flex-direction: column; }
+            .doc-bar { display: none; }
         }
     </style>
 </head>
 <body>
+
+    <div class="doc-bar">
+        <span style="color:#666; font-weight:bold;">REFERENCES:</span>
+        <a href="https://github.com/lemonscripter/MetaSpace-Drone-Shield" target="_blank" class="doc-link">Formal Verification Paper (PDF)</a>
+        <a href="https://github.com/lemonscripter/MetaSpace-Drone-Shield" target="_blank" class="doc-link">Formal Semantics (SMT/Z3)</a>
+        <a href="https://github.com/lemonscripter/MetaSpace-Drone-Shield" target="_blank" class="doc-link">Assurance Case (GSN)</a>
+        <a href="https://github.com/lemonscripter/MetaSpace-Drone-Shield" target="_blank" class="doc-link">Validation Roadmap</a>
+    </div>
+
     <header>
         <div class="logo">
-            <h1>MetaSpace<span style="font-size:0.5em">.bio</span></h1>
-            <small>Deterministic Mission Assurance Simulator</small>
+            <h1>MetaSpace<span style="font-size:0.5em; opacity:0.7">.research</span></h1>
+            <small>Deterministic FDIR & Invariant Checking Simulator</small>
         </div>
         <div class="system-status">
-            <a href="/about" style="color: #66fcf1; text-decoration: none; border: 1px solid #66fcf1; padding: 5px 15px; border-radius: 4px; font-size: 12px; margin-right: 15px; transition: all 0.3s;">
-                ℹ️ Mi ez? / About
-            </a>
-            <span class="status-indicator online"></span> CORE V1.4: ONLINE
+            <a href="/about" class="contact-btn" style="text-decoration:none; margin-right:15px; font-size:12px;">Methodology & About</a>
+            <span class="status-indicator online"></span> SIMULATION CORE: READY
         </div>
     </header>
 
+    <div id="intro-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close" onclick="document.getElementById('intro-modal').style.display='none'">&times;</span>
+            <div class="modal-header">
+                <h2 style="color:#fff; margin:0;">MetaSpace: Deterministic Autonomous Integrity</h2>
+                <small style="color:#8892b0;">Abstract & Simulation Context</small>
+            </div>
+            <div style="color:#ccc; line-height: 1.6;">
+                <p><strong>Mi ez az eszköz?</strong> Ez a szimulátor a <em>MetaSpace determinisztikus FDIR (Fault Detection, Isolation, and Recovery)</em> algoritmus validációs környezete. A NASA Landsat-9 műhold fizikai modelljét használva demonstrálja a különbséget a hagyományos sztochasztikus szűrők (EKF) és az invariáns-alapú ellenőrzés között.</p>
+                
+                <p><strong>A probléma:</strong> A hagyományos EKF (Extended Kalman Filter) rendszerek "step-function" jellegű hibák (pl. szenzor spoofing, fizikai törés) esetén hajlamosak a divergenciára ("vakrepülés").</p>
+                
+                <p><strong>A megoldás (MetaSpace):</strong> Nem valószínűségeket becsül, hanem <span style="color:#66fcf1">Formális Logikai Invariánsokat (SMT/Z3)</span> ellenőriz valós időben. Ha <code>P_out > P_in</code>, a rendszer nem átlagol, hanem azonnal izolál.</p>
+                
+                <div style="margin-top:30px; text-align:right;">
+                    <button class="contact-btn" onclick="closeModalAndRun()">
+                        Load Demo Scenario (Solar Panel Failure)
+                    </button>
+                    <button class="contact-btn" style="border-color:#555; color:#aaa;" onclick="document.getElementById('intro-modal').style.display='none'">
+                        Manual Configuration
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <aside class="sidebar">
-            <h2>1. Szimulációs konfiguráció</h2>
-            <p style="font-size:12px; color:#aaa; margin-bottom: 15px;">
-                Válassz forgatókönyvet. A hiba időpontja minden futtatásnál <strong>véletlenszerű</strong>.
+            <h2 style="font-size: 0.9em; text-transform: uppercase; color: #66fcf1;">Simulation Parameters</h2>
+            <p style="font-size:11px; color:#aaa; margin-bottom: 15px;">
+                Input variables for the Landsat-9 Digital Twin model.
             </p>
             
-            <label>Forgatókönyv (Scenario)</label>
+            <label>Failure Scenario</label>
             <select id="scenario-select">
-                <option value="gps_antenna">GPS antenna hiba (Jelvesztés)</option>
-                <option value="battery_failure">Akkumulátor összeomlás (Zárlat)</option>
-                <option value="solar_panel">Napelem törés (Lassú lemerülés)</option>
-                <option value="imu_drift">IMU szenzor drift (Sodródás)</option>
-                <option value="nominal">Nominális (Nincs hiba)</option>
+                <option value="solar_panel">Solar Panel Structural Failure (Power Budget)</option>
+                <option value="gps_antenna">GPS Signal Loss / Drift (Kinematic)</option>
+                <option value="battery_failure">Battery Cell Short Circuit (Thermal)</option>
+                <option value="imu_drift">IMU Bias Drift (Attitude)</option>
+                <option value="nominal">Nominal Operation (Control Group)</option>
             </select>
 
-            <label>Időtartam (Nap)</label>
+            <label>Duration (Orbit Cycles / Days)</label>
             <input type="number" id="duration-input" value="60" min="20" max="365">
 
-            <button id="sim-btn" onclick="runSimulation()">Összehasonlítás indítása</button>
+            <button id="sim-btn" onclick="runSimulation()">Execute Simulation & Analysis</button>
 
             <div style="margin-top: 30px; border-top: 1px solid #444; padding-top:20px;">
-                <h2>3. Élő státusz</h2>
+                <h2 style="font-size: 0.9em; text-transform: uppercase;">Real-time Solver Status</h2>
                 <div class="metric-box">
-                    <div style="font-size:12px; color:#aaa">RENDSZER ÁLLAPOT</div>
-                    <div id="live-status" class="metric-val" style="color:#2ecc71">VÁRAKOZÁS</div>
+                    <div style="font-size:10px; color:#aaa">INVARIANT CHECKER</div>
+                    <div id="live-status" class="metric-val" style="color:#2ecc71; font-size:14px;">STANDBY</div>
                 </div>
             </div>
         </aside>
@@ -126,32 +145,44 @@
         <main class="main-panel">
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <div><h2>2. Megbízhatósági görbe (Mission Feasibility)</h2></div>
-                    <div style="font-size:12px; color:#aaa; text-align:right;">
-                        <span style="color:#e74c3c; font-weight:bold;">--- Hagyományos EKF</span> &nbsp;|&nbsp; 
-                        <span style="color:#66fcf1; font-weight:bold;">── MetaSpace.bio</span>
+                    <div>
+                        <h2>Mission Feasibility Analysis</h2>
+                        <small style="color:#777;">Comparison of Stochastic (Red) vs. Deterministic (Blue) Logic</small>
                     </div>
                 </div>
-                <div class="chart-container">
-                    <canvas id="feasibilityChart"></canvas>
+                <div class="chart-container" id="chart-wrapper">
+                    <div class="placeholder-state" id="chart-placeholder">
+                        <h3>Awaiting Simulation Data</h3>
+                        <p>Configure parameters on the left or load a demo to visualize the Mission Assurance Curve.</p>
+                        <small>X: Time (Days) | Y: Reliability Confidence (%)</small>
+                    </div>
+                    <canvas id="feasibilityChart" style="display:none;"></canvas>
                 </div>
             </div>
 
-            <div class="card" style="border: 1px solid #66fcf1; background: #0f1820; min-height: 100px;">
-                <h2 style="color:#fff; border-bottom: 1px solid #333; padding-bottom:5px; margin-top:0;">Mi történik éppen? (Élő elemzés)</h2>
-                <div id="narrative-box" style="font-size: 15px; line-height: 1.6; color: #ddd;">
-                    Indítsd el a szimulációt a részletes elemzéshez...
+            <div class="card" style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+                <div>
+                    <h2>Diagnostic Output</h2>
+                    <div id="narrative-box" style="font-size: 13px; line-height: 1.5; color: #ccc; height: 150px; overflow-y: auto;">
+                        <span style="color:#555;">> System initialized.</span><br>
+                        <span style="color:#555;">> Loaded kinematic model: Landsat-9 (NASA)</span><br>
+                        <span style="color:#555;">> Waiting for input...</span>
+                    </div>
+                </div>
+                <div>
+                    <h2>Invariant Verification Log</h2>
+                    <div id="bio-stream" style="font-family: monospace; font-size: 10px; background: #000; padding:10px; height: 150px; overflow-y: hidden; opacity: 0.7;">
+                        <div class="log-entry"><span class="log-timestamp">[T-0]</span> <span class="log-type">[INIT]</span> Z3 Solver Loaded.</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div>
-                    <h2>4. Végső elemzés és ROI</h2>
-                    <div id="final-report" style="font-size:13px; color:#ccc;">Várakozás az eredményekre...</div>
-                </div>
-                <div>
-                    <h2>Bio-Code Stream (Titkos mag)</h2>
-                    <div id="bio-stream" style="font-family: monospace; font-size: 11px;">>>> RENDSZER KÉSZ.</div>
+            <div class="card" style="margin-top: 20px;">
+                <h2 style="border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; font-size: 1.1em; color: #fff;">
+                    Subsystem & Component Health Matrix (Level 1 Status)
+                </h2>
+                <div id="component-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px;">
+                    <div class="placeholder-state" style="border:none; padding:10px; grid-column: 1 / -1;">Waiting for telemetry packet...</div>
                 </div>
             </div>
         </main>
@@ -159,43 +190,40 @@
 
     <footer>
         <div class="footer-grid">
-            
             <div class="footer-col">
-                <h4>Hasznos linkek</h4>
-                <a href="https://metaspace.bio" target="_blank">MetaSpace.bio &rarr;</a>
-                <a href="https://lemonscript.info" target="_blank">LemonScript.info &rarr;</a>
-                <a href="https://github.com/lemonscripter/MetaSpace-Drone-Shield" target="_blank">Dokumentáció &rarr;</a>
+                <h4>Methodology Sources</h4>
+                <a href="https://github.com/lemonscripter/MetaSpace-Drone-Shield" target="_blank">FMEA Report &rarr;</a>
+                <a href="https://github.com/lemonscripter/MetaSpace-Drone-Shield" target="_blank">Formal Verification Paper &rarr;</a>
             </div>
-
             <div class="footer-col">
-                <h4>Kapcsolat</h4>
-                <p style="color:#8892b0; margin-bottom:15px;">Technológiai kérdések és befektetés:</p>
-                <button class="contact-btn" onclick="openMail()">
-                    ✉️ Email küldése
-                </button>
-            </div>
-
-            <div class="footer-col">
-                <h4>Rendszerinfó</h4>
-                <p style="color:#666; font-size: 0.9em; line-height: 1.5;">
-                    Core Version: v1.4 (Stable)<br>
-                    Logic Engine: Python 3.10<br>
-                    Physics: Landsat-9 Model
+                <h4>Core Technology</h4>
+                <p style="color:#666; font-size: 0.85em;">
+                    <strong>Logic Core:</strong> SMT-based Invariant Checking (Python/Z3)<br>
+                    <strong>Physical Model:</strong> Landsat-9 Orbital Mechanics<br>
+                    <strong>Validation:</strong> DO-178C / IEC 61508 Compliant Workflow
                 </p>
             </div>
+            <div class="footer-col">
+                <h4>Contact</h4>
+                <button class="contact-btn" onclick="openMail()">Request Full Whitepaper</button>
+            </div>
         </div>
-
         <div class="copyright-bar">
-            <strong>Copyright © 2025 Citrom Media SRL (LemonScript Laboratory).</strong> All rights reserved.
+            MetaSpace Project | <strong>Reference Implementation v1.4.2</strong> | Based on research by LemonScript Lab
         </div>
     </footer>
+
     <script src="/static/js/main.js"></script>
     <script>
-        // Spam védelem
         function openMail() {
-            const user = "hello";
-            const domain = "metaspace.bio";
-            window.location.href = "mailto:" + user + "@" + domain;
+            window.location.href = "mailto:research@metaspace.bio";
+        }
+        
+        function closeModalAndRun() {
+            document.getElementById('intro-modal').style.display='none';
+            // Beállítjuk a demo paramétereket
+            document.getElementById('scenario-select').value = 'solar_panel';
+            runSimulation();
         }
     </script>
 </body>

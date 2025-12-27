@@ -1,179 +1,179 @@
 import json
 import random
 import os
-import copy
+import uuid
+import time
 from datetime import datetime
-from .secure_bridge import SecureBridge
-from .metaspace import MetaSpaceSimulator
 from .landsat9 import Landsat9Model
-from .ekf_model import EKFSimulator
-from .failure import FailureInjector
+
+# Megpróbáljuk importálni a SecureBridge-et, de nem omlunk össze, ha nincs meg
+try:
+    from .secure_bridge import SecureBridge
+except ImportError:
+    SecureBridge = None
 
 class SimulationEngine:
-    def __init__(self):
-        self.simulations = {}
-        self.results = {}
-        
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        key_path = os.path.join(base_dir, "metaspace_master.key")
-        
-        print(f"[SIMULATOR] Secure Bridge inicializálása: {key_path}")
-        if SecureBridge.initialize(key_path):
-            print("[SIMULATOR] Secure Bridge ONLINE. Titkos magok aktívak.")
-        else:
-            print("[SIMULATOR] FIGYELEM: Secure Bridge OFFLINE.")
+    """
+    MetaSpace v2.0 Simulation Engine
+    --------------------------------
+    Ez a központi vezérlő egység, amely összeköti a Flask API-t 
+    a mélyszintű fizikai modellel (Landsat9Model).
+    
+    Feladatai:
+    1. A szimulációs környezet inicializálása (SecureBridge).
+    2. A v2.0 Bio-Architektúra példányosítása.
+    3. Időbeli léptetés (Time-stepping) és hiba-injektálás vezérlése.
+    4. Az eredmények strukturált mentése (Audit Trail).
+    """
 
-    def run(self, scenario, duration, seed=None):
-        if seed: random.seed(seed)
-        sim_id = self._generate_id()
+    def __init__(self):
+        self.results_cache = {}
         
-        # 1. Modellek
-        landsat_metaspace = Landsat9Model()
-        landsat_ekf = copy.deepcopy(landsat_metaspace) 
+        # Könyvtárstruktúra beállítása
+        # Visszalépünk a gyökérkönyvtárba (backend/modules -> backend -> root)
+        self.base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        self.results_dir = os.path.join(self.base_dir, "results")
         
-        # 2. VÉLETLENSZERŰSÉG GENERÁLÁSA
-        # A hiba a futamidő 10%-a és 80%-a között történjen valahol
-        min_day = max(2, int(duration * 0.1))
-        max_day = max(min_day + 1, int(duration * 0.8))
-        random_fail_day = random.randint(min_day, max_day)
-        
-        # Config
-        if isinstance(scenario, str):
-            config = {"failure_type": scenario}
+        # Eredménykönyvtár létrehozása, ha nem létezik
+        if not os.path.exists(self.results_dir):
+            try:
+                os.makedirs(self.results_dir)
+                print(f"[SIMULATOR] Results directory created at: {self.results_dir}")
+            except OSError as e:
+                print(f"[SIMULATOR] ERROR creating results directory: {e}")
+
+        # Biztonsági modul inicializálása (Legacy support)
+        self._init_security()
+
+    def _init_security(self):
+        """
+        Ellenőrzi a titkosító kulcsokat és a rendszer integritását.
+        """
+        print("[SIMULATOR] Initializing System Core...")
+        if SecureBridge:
+            key_path = os.path.join(self.base_dir, "metaspace_master.key")
+            if os.path.exists(key_path):
+                print(f"[SIMULATOR] Secure Bridge Found: {key_path}")
+                if SecureBridge.initialize(key_path):
+                    print("[SIMULATOR] Secure Bridge ONLINE. Invariant Enforcer Active.")
+                else:
+                    print("[SIMULATOR] WARNING: Secure Bridge Init Failed.")
+            else:
+                print("[SIMULATOR] NOTICE: Master Key not found. Running in simulation mode.")
         else:
-            config = scenario
+            print("[SIMULATOR] SecureBridge module not present (v2.0 Bypass Active).")
+
+    def run(self, scenario, duration):
+        """
+        A fő szimulációs ciklus futtatása.
+        
+        Args:
+            scenario (str): A kiválasztott hiba típusa (pl. 'solar_panel').
+            duration (int): A szimuláció hossza napokban.
             
-        # Injektorok beállítása a véletlen nappal
-        injector_ms = FailureInjector(config)
-        injector_ms.set_random_day(random_fail_day)
+        Returns:
+            str: A szimuláció egyedi azonosítója (UUID).
+        """
+        sim_id = str(uuid.uuid4())
+        start_time = time.time()
         
-        injector_ekf = FailureInjector(config)
-        injector_ekf.set_random_day(random_fail_day)
+        print(f"\n--- MetaSpace v2.0 Simulation Start [ID: {sim_id}] ---")
+        print(f"Scenario: {scenario} | Duration: {duration} days")
+
+        # 1. MODEL INICIALIZÁLÁS (Bio-Architektúra)
+        # Itt példányosítjuk az új Landsat9Model-t, ami már tartalmazza
+        # a Subsystems (EPS, GNC) és Components (Sejt) logikát.
+        satellite = Landsat9Model()
         
-        # 3. Futamok
-        print(f"--- MetaSpace futam (Hiba napja: {random_fail_day}) ---")
-        ms_results = self._run_simulation_loop(
-            landsat_metaspace, injector_ms, duration, use_metaspace=True
-        )
+        # 2. HIBA IDŐZÍTÉS (Randomizálás)
+        # A hiba ne azonnal történjen, hanem a futamidő 20%-a és 80%-a között.
+        min_day = max(2, int(duration * 0.2))
+        max_day = max(min_day + 1, int(duration * 0.8))
+        failure_day = random.randint(min_day, max_day)
         
-        print(f"--- EKF futam (Hiba napja: {random_fail_day}) ---")
-        ekf_results = self._run_simulation_loop(
-            landsat_ekf, injector_ekf, duration, use_metaspace=False
-        )
+        # Átváltás percekre (mivel a fizikai motor perc alapon számol)
+        failure_minute_start = failure_day * 24 * 60
         
-        # Eredmény összeállítása
-        result_data = {
-            'simulation_id': sim_id,
-            'scenario': scenario,
+        print(f"[SIMULATOR] Stochastic Failure Injection scheduled for Day {failure_day} (T+{failure_minute_start} min)")
+
+        # 3. SZIMULÁCIÓS LOOP
+        # Óránkénti mintavételezést használunk a gyors válaszidő érdekében,
+        # de a Landsat9Model a háttérben kezeli a fizikai változókat.
+        dt_minutes = 60 
+        total_minutes = duration * 24 * 60
+        
+        history = []
+        failure_triggered = False
+        
+        # Végigmegyünk az idővonalon...
+        for t in range(0, total_minutes, dt_minutes):
+            current_day_float = t / (24 * 60)
+            
+            # Ellenőrizzük, eljött-e a hiba ideje
+            active_failure = None
+            if not failure_triggered and t >= failure_minute_start:
+                if scenario != 'nominal':
+                    active_failure = scenario
+                    failure_triggered = True
+                    print(f"[SIMULATOR] >> INJECTION TRIGGERED: {scenario} at T+{t}min")
+
+            # --- V2 CORE LOGIC HÍVÁS ---
+            # Ez a sor a lelke mindennek: meghívjuk a fizikai modellt.
+            # A visszatérő 'telemetry' dictionary tartalmazza az EPS és GNC állapotokat.
+            telemetry = satellite.simulate_step(dt_minutes, failure_mode=active_failure)
+            
+            # Kiegészítjük metaadatokkal a frontend számára
+            telemetry['day_float'] = round(current_day_float, 2)
+            telemetry['timestamp_min'] = t
+            
+            # Hozzáadjuk a történelmet
+            history.append(telemetry)
+
+        # 4. EREDMÉNY CSOMAG ÖSSZEÁLLÍTÁSA
+        execution_time = time.time() - start_time
+        print(f"[SIMULATOR] Simulation completed in {execution_time:.4f}s")
+        
+        result_package = {
+            'sim_id': sim_id,
             'timestamp': datetime.now().isoformat(),
-            'metaspace': ms_results,
-            'ekf': ekf_results,
-            'failure_day': random_fail_day # Elküldjük a frontendnek is
+            'scenario': scenario,
+            'days': duration,
+            'failure_day': failure_day,
+            'data_points_count': len(history),
+            'execution_time_sec': execution_time,
+            'model_version': 'v2.0 (Bio-Architecture)',
+            # Az utolsó állapotot elküldjük, hogy lássuk, túlélte-e
+            'final_status': history[-1],
+            # A teljes logot is elmentjük, ha részletes elemzés kell
+            'telemetry_log': history 
         }
 
-        # --- ADATMENTÉS (AUDIT) ---
-        # A results mappa létrehozása a gyökérkönyvtárban
-        root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        results_dir = os.path.join(root_dir, "results")
+        # 5. MENTÉS ÉS CACHE
+        self._save_results(sim_id, result_package)
+        self.results_cache[sim_id] = result_package
         
-        if not os.path.exists(results_dir):
-            os.makedirs(results_dir)
-            
-        # Fájl mentése JSON formátumban
-        filename = f"{results_dir}/{sim_id}_{config.get('failure_type', 'unknown')}.json"
-        try:
-            with open(filename, 'w') as f:
-                json.dump(result_data, f, indent=4)
-            print(f"[SIMULATOR] Eredmények auditálva ide: {filename}")
-        except Exception as e:
-            print(f"[SIMULATOR] Hiba a mentés során: {e}")
-
-        self.results[sim_id] = result_data
         return sim_id
 
-    def _run_simulation_loop(self, model, injector, duration, use_metaspace):
-        metaspace = MetaSpaceSimulator(model) if use_metaspace else None
-        ekf = EKFSimulator(model) 
+    def _save_results(self, sim_id, data):
+        """
+        Eredmények mentése JSON fájlba a 'results' mappába.
+        Ez biztosítja az Audit Trail-t a későbbi elemzésekhez.
+        """
+        filename = f"{sim_id}_{data['scenario']}.json"
+        filepath = os.path.join(self.results_dir, filename)
         
-        timeline = []
-        
-        for day in range(duration):
-            # 1. Hiba Injektálás (Minden nap ellenőrizzük, el kell-e rontani a hardvert)
-            injector.apply_failures(model, day)
-            
-            # 2. Fizikai Szimuláció (NAPI LÉPÉS - FONTOS VÁLTOZÁS!)
-            # step() helyett simulate_day()-t hívunk az energiamérleg miatt
-            model.simulate_day() 
-            
-            # 3. Érzékelés
-            ekf.update()
-            
-            mode = "FULL_MISSION"
-            feasibility = 100
-            latency = 0
-            message = ""
-            
-            # Állapotok kiolvasása a modellből
-            phys_gps_err = getattr(model, 'gps_error', 0.0)
-            phys_bat_lvl = getattr(model, 'battery_level', 100.0)
-            phys_imu_err = getattr(model, 'imu_accumulated_error', 0.0)
-
-            if use_metaspace:
-                # --- METASPACE ---
-                metaspace.update()
-                feasibility = metaspace.mission_feasibility
-                mode = metaspace.execution_mode
-                latency = metaspace.detection_latency
-                
-                if mode == "SAFE_MODE":
-                    if phys_bat_lvl < 20.0:
-                         message = "KRITIKUS: Energiahiány! Payload lekapcsolva a 'Dead Bus' elkerülése érdekében."
-                    elif phys_gps_err > 50.0:
-                         message = "KRITIKUS: GPS hiba! Adatgyűjtés blokkolva (Selejt védelem)."
-                    elif phys_imu_err > 0.5:
-                         message = "KRITIKUS: Navigációs sodródás! Pályakorrekció szükséges."
-                    else:
-                         message = "BIZTONSÁGI ZÁR: Ismeretlen anomália."
-                elif latency > 0 and feasibility < 100:
-                    message = "FIGYELEM: MetaSpace korrekció."
-                else:
-                    message = "Nominális működés (MetaSpace)."
-                    
-            else:
-                # --- EKF ---
-                if ekf.anomaly_detected:
-                    mode = "SAFE_MODE"
-                    feasibility = ekf.confidence
-                    message = "HIBA: EKF hibát jelzett (késve)."
-                
-                # Rejtett hibák (Ez a lényeg!)
-                elif phys_bat_lvl < 20.0:
-                    message = "VESZÉLY: Kritikus akku! Az EKF nem látja, a műhold elveszhet."
-                    feasibility = 100 
-                elif phys_gps_err > 50.0:
-                    message = "VESZÉLY: GPS hiba! Az EKF selejtet ment."
-                    feasibility = 100
-                elif phys_imu_err > 1.0:
-                    message = "VESZÉLY: Lopakodó drift! Navigáció pontatlan."
-                    feasibility = 100
-                else:
-                    message = "Nominális működés (EKF)."
-
-            timeline.append({
-                'day': day,
-                'feasibility': feasibility,
-                'mode': mode,
-                'latency_ms': f"{latency:.2f}",
-                'gps_error': f"{phys_gps_err:.2f}",
-                'battery_level': f"{phys_bat_lvl:.1f}",
-                'imu_error': f"{phys_imu_err:.4f}",
-                'message': message
-            })
-            
-        return {'timeline': timeline}
+        try:
+            with open(filepath, 'w') as f:
+                json.dump(data, f, indent=4)
+            print(f"[SIMULATOR] Results successfully saved to: {filepath}")
+        except Exception as e:
+            print(f"[SIMULATOR] CRITICAL ERROR saving results: {e}")
 
     def get_results(self, sim_id):
-        return self.results.get(sim_id)
-
-    def _generate_id(self):
-        return f"sim_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        """
+        Eredmények visszakérése a memóriából (API híváshoz).
+        """
+        res = self.results_cache.get(sim_id)
+        if not res:
+            print(f"[SIMULATOR] Warning: Results for ID {sim_id} not found in cache.")
+        return res

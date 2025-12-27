@@ -1,118 +1,168 @@
 import numpy as np
-import random
+from .subsystems import EPSSubsystem, GNCSubsystem
 
 class Landsat9Model:
     """
-    Landsat-9 fizikai szimulátor (A Valóság).
-    Ez a modul a fizikai törvényeket szimulálja.
+    MetaSpace v2.0 - Landsat-9 Digital Twin
+    
+    Ez a modul a műhold "fizikai teste". 
+    A v2.0 architektúrában már nem saját maga számolja az energiát vagy a navigációt,
+    hanem dedikált alrendszereket (Bio-Organs) vezérel:
+    - EPS (Electrical Power System)
+    - GNC (Guidance, Navigation & Control)
+    
+    Fizikai paraméterek:
+    - Tömeg: ~2700 kg
+    - Pálya: 705 km (Napszinkron)
+    - Keringési idő: ~99 perc
     """
+    
     def __init__(self):
-        # Orbitális paraméterek
-        self.time_step = 0
-        self.orbital_period = 99 * 60 
+        # --- ALRENDSZEREK (Level 2: Subsystems) ---
+        self.eps = EPSSubsystem() # Energiaellátás
+        self.gnc = GNCSubsystem() # Navigáció és Irányítás
         
-        # Fizikai állapot
-        self.battery_level = 100.0 # %
-        self.position = np.array([705000.0, 0.0, 0.0]) 
-        self.velocity = np.array([0.0, 7500.0, 0.0]) 
+        # --- ORBITÁLIS FIZIKA (Constants) ---
+        self.orbital_period = 99.0  # perc
+        self.orbit_height = 705.0   # km
+        self.velocity = 7.5         # km/s
+        self.eclipse_ratio = 0.35   # A pálya 35%-a van árnyékban
         
-        # --- HARDVER ÁLLAPOTOK (A Failure Injector ezeket rontja el) ---
-        self.gps_bias = np.zeros(3)
-        self.gps_noise_factor = 1.0
-        self.gps_timeout = False
+        # --- ÁLLAPOTVÁLTOZÓK ---
+        self.time_elapsed = 0.0     # Eltelt idő (perc)
+        self.in_sunlight = True     # Napon vagyunk-e?
+        self.base_consumption = 450.0 # Watt (Alapfogyasztás: fedélzeti számítógép + fűtés)
         
-        self.imu_bias = np.zeros(3)
-        self.imu_drift_rate = 0.0
-        
-        self.battery_dead = False        # Ha igaz, az akku nem tárol áramot
-        self.solar_efficiency = 1.0      # 1.0 = 100%, 0.0 = Törött napelem
-        
-        # Publikus metrikák (Resetelve)
-        self.gps_error = 0.0 
-        self.imu_accumulated_error = 0.0 
+        # --- TELEMETRIA BUFFER ---
+        self.last_state = {}
 
-    def step(self, dt=1.0):
+    def calculate_orbit_position(self, t_minutes):
         """
-        RÖVID IDŐTÁVÚ LÉPÉS (1 másodperc).
-        Ezt használjuk a mozgáshoz, de az energiafogyasztást 
-        átraktuk a simulate_day-be a pontosabb mérlegszámításért.
+        Kiszámolja a műhold pozícióját a pályán, és meghatározza,
+        hogy éppen a Föld árnyékában van-e (Eclipse).
         """
-        self.time_step += dt
+        # A ciklusban elfoglalt hely (0.0 - 1.0)
+        cycle_pos = (t_minutes % self.orbital_period) / self.orbital_period
         
-        # 1. Mozgás (Keringés)
-        angle = (self.time_step / self.orbital_period) * 2 * np.pi
-        r = 705000.0 
-        self.position = np.array([
-            r * np.cos(angle),
-            r * np.sin(angle),
-            0.0
-        ])
+        # Landsat-9 napszinkron pályán van.
+        # Feltételezzük, hogy a ciklus elején lép ki a napra.
+        # 0.0 - 0.65: Napos oldal
+        # 0.65 - 1.0: Árnyékos oldal (Eclipse)
+        self.in_sunlight = cycle_pos < (1.0 - self.eclipse_ratio)
         
-        # Megjegyzés: Az akku töltést/merítést kivettük innen és átraktuk
-        # a simulate_day()-be, hogy a napelem hiba (solar_efficiency)
-        # hatása drasztikusabb legyen napi szinten.
+        return self.in_sunlight
 
-    def simulate_day(self):
+    def inject_failure(self, failure_type):
         """
-        EGY TELJES NAP SZIMULÁCIÓJA (Energy Budgeting).
-        Ez a függvény felelős azért, hogy a napelem hiba látható legyen.
+        Kívülről érkező hiba (Simulated Fault Injection).
+        A hibát továbbítja az érintett alrendszernek.
         """
-        # Előretekerjük az időt egy nappal
-        self.time_step += 86400 
+        print(f"[LANDSAT-9] Failure Injection Triggered: {failure_type}")
         
-        # 1. ENERGIA RENDSZER (A kritikus javítás)
-        if self.battery_dead:
-            # Ha az akku cellazárlatos, a kapacitás azonnal leesik és ott is marad
-            self.battery_level = 15.0 
+        if failure_type == 'solar_panel':
+            # Fizikai behatás: Meteor vagy törmelék találat a bal szárnyon
+            self.eps.inject_solar_failure()
+            
+        elif failure_type == 'battery_failure':
+            # Termikus futás: Akkumulátor cella zárlat
+            self.eps.inject_battery_failure()
+            
+        elif failure_type == 'imu_drift' or failure_type == 'gps_antenna':
+            # Szenzor hiba: A GNC rendszer egyik érzékelőjét "megvakítjuk"
+            # 0 = Az elsődleges Star Tracker vagy IMU
+            self.gnc.inject_failure(0)
+            
         else:
-            # Napi energiamérleg számítás
-            # Töltés: Névlegesen +50% kapacitás naponta (ha a napelem ép)
-            # Ha solar_efficiency = 0.2 (törött), akkor csak +10% jön be!
-            daily_production = 50.0 * self.solar_efficiency
-            
-            # Fogyasztás: A műhold napi alapfogyasztása -40% kapacitás
-            daily_consumption = 40.0
-            
-            # Nettó változás
-            net_change = daily_production - daily_consumption
-            
-            # Akku szint frissítése (0 és 100% között)
-            self.battery_level = max(0.0, min(100.0, self.battery_level + net_change))
+            print(f"[LANDSAT-9] Unknown failure type: {failure_type}")
 
-        # 2. IMU DRIFT (Napi akkumuláció)
-        if self.imu_drift_rate > 0:
-            # A drift mértéke naponta adódik össze
-            daily_drift = np.random.normal(0.5, 0.1, 3) * self.imu_drift_rate
-            self.imu_bias += daily_drift
-            self.imu_accumulated_error = np.linalg.norm(self.imu_bias)
-
-    def get_gps_measurement(self):
-        """GPS mérés generálása"""
-        if self.gps_timeout:
-            self.gps_error = 9999.0
-            return None 
-            
-        noise = np.random.normal(0, 5.0, 3) * self.gps_noise_factor
-        measured_pos = self.position + noise + self.gps_bias
+    def simulate_step(self, dt_minutes, current_failure=None):
+        """
+        Egyetlen szimulációs lépés végrehajtása (dt_minutes időközzel).
+        Ez a függvény hívja meg az alrendszerek update() metódusait.
+        """
+        self.time_elapsed += dt_minutes
         
-        # Valós hiba kiszámítása (hogy a szimulátor tudja)
-        self.gps_error = np.linalg.norm(measured_pos - self.position)
+        # 1. Környezeti hatások számítása
+        is_sun = self.calculate_orbit_position(self.time_elapsed)
+        sun_intensity = 1.0 if is_sun else 0.0
+
+        # 2. Hiba injektálás (ha éppen most történik)
+        if current_failure:
+            self.inject_failure(current_failure)
+
+        # 3. EPS ALRENDSZER FRISSÍTÉSE
+        dt_hours = dt_minutes / 60.0
+        eps_status = self.eps.update_energy_budget(
+            sun_intensity=sun_intensity,
+            power_consumption_watts=self.base_consumption,
+            dt_hours=dt_hours
+        )
+
+        # 4. GNC ALRENDSZER FRISSÍTÉSE
+        true_orientation = 1.0 
+        measured_orientation = self.gnc.get_verified_orientation(true_orientation)
         
-        return measured_pos
+        if measured_orientation is None:
+            attitude_integrity = 0.0
+        else:
+            error = abs(measured_orientation - true_orientation)
+            attitude_integrity = max(0.0, 100.0 - (error * 1000))
 
-    def get_imu_measurement(self):
-        """IMU mérés generálása"""
-        acc_true = np.array([0.0, 0.0, 9.81]) # Gravitáció helyett gyorsulás
-        noise = np.random.normal(0, 0.05, 3)
-        return acc_true + noise + self.imu_bias
-
-    def get_telemetry(self):
-        """Adatcsomag a rendszereknek"""
-        self.get_gps_measurement() # Frissíti a gps_error-t
-            
-        return {
-            "gps_position_error": self.gps_error,
-            "imu_drift_error": self.imu_accumulated_error,
-            "battery_level": self.battery_level,
-            "timestamp_ms": int(self.time_step * 1000)
+        # 5. Adatok összeállítása (RÉSZLETES TELEMETRIA BŐVÍTÉS)
+        # Itt gyűjtjük ki az egyes "sejtek" (komponensek) állapotát név szerint
+        component_health = {}
+        
+        # EPS (Energia) komponensek lekérdezése
+        for panel in self.eps.solar_wings:
+            component_health[panel.name] = {
+                'health': panel.health, 
+                'active': panel.is_active,
+                'temp': panel.temperature
+            }
+        # Akkumulátor hozzáadása
+        component_health[self.eps.battery.name] = {
+            'health': self.eps.battery.health,
+            'active': self.eps.battery.is_active,
+            'charge': self.eps.battery.current_charge
         }
+
+        # GNC (Navigáció) komponensek lekérdezése
+        for sensor in self.gnc.star_trackers:
+            component_health[sensor.name] = {
+                'health': sensor.health,
+                'active': sensor.is_active,
+                'faults': sensor.faults
+            }
+
+        telemetry = {
+            'time': self.time_elapsed,
+            'is_eclipse': not is_sun,
+            
+            # --- ÖSSZESÍTETT ADATOK (Grafikonhoz) ---
+            'battery_percent': eps_status['battery_percent'],
+            'power_generation_w': eps_status['generation'],
+            'attitude_integrity': attitude_integrity,
+            'active_sensors': self.gnc.active_sensor_count,
+            
+            # --- RÉSZLETES BONTÁS (A Grid nézethez) ---
+            'components': component_health,  # <--- EZ AZ ÚJ KULCS!
+            
+            'system_status': 'NOMINAL' if eps_status['battery_percent'] > 20 and attitude_integrity > 90 else 'CRITICAL'
+        }
+        
+        self.last_state = telemetry
+        return telemetry
+
+    def run_full_day_simulation(self):
+        """
+        Segédfüggvény teszteléshez
+        """
+        results = []
+        minutes_per_day = 24 * 60
+        dt = 1.0 
+        
+        for t in np.arange(0, minutes_per_day, dt):
+            state = self.simulate_step(dt)
+            results.append(state)
+            
+        return results
