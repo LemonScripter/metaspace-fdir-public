@@ -27,7 +27,6 @@
         
         <aside class="panel controls-area">
             <div class="panel-title">Flight Configuration</div>
-            
             <div class="control-group">
                 <label>INJECTION SCENARIO</label>
                 <select id="scenario-select">
@@ -38,19 +37,13 @@
                     <option value="nominal">Nominal Flight (Control)</option>
                 </select>
             </div>
-
             <div class="control-group">
                 <label>MISSION DURATION (DAYS)</label>
                 <input type="number" id="duration-input" value="60" min="20" max="365">
             </div>
-
             <div style="margin-top:auto;">
-                <p style="font-size:12px; color:#666; margin-bottom:10px;">
-                    *Initiating simulation will trigger the Python physics engine and SMT solver.
-                </p>
-                <button id="sim-btn" class="btn-launch" onclick="runSimulation()">
-                    EXECUTE SIMULATION
-                </button>
+                <p style="font-size:12px; color:#666; margin-bottom:10px;">*Initiating simulation will trigger the Python physics engine.</p>
+                <button id="sim-btn" class="btn-launch" onclick="runSimulation()">EXECUTE SIMULATION</button>
             </div>
         </aside>
 
@@ -91,26 +84,30 @@
 
     </div>
 
+    <footer class="mission-footer">
+        <div>
+            METASPACE OPS | REF: MS-V2.1-RC3 | <span style="opacity:0.6">INTERNAL USE ONLY</span>
+        </div>
+        <div>
+            <span class="footer-status-dot"></span> LINK ACTIVE | 
+            <a href="https://github.com/lemonscripter/MetaSpace-Drone-Shield" target="_blank">SECURE REPO ACCESS &rarr;</a>
+        </div>
+    </footer>
+
     <div id="intro-modal" class="modal-overlay">
         <div class="modal-content">
             <span class="modal-close" style="float:right; cursor:pointer; color:var(--neon-cyan); font-size:24px;" onclick="document.getElementById('intro-modal').style.display='none'">&times;</span>
-            
             <h2 style="color:#fff; margin-top:0; font-family:'Orbitron'">MetaSpace Validation Environment</h2>
             <p style="color:#aaa;">Ez az eszköz a MetaSpace determinisztikus FDIR algoritmus validációs környezete (TRL-4).</p>
-            
             <div style="border-left: 3px solid var(--neon-cyan); padding-left:15px; margin:20px 0; color:#ddd;">
                 <p><strong>Cél:</strong> Demonstrálni a különbséget a sztochasztikus (EKF) és az invariáns-alapú (MetaSpace) hibakezelés között.</p>
                 <p><strong>Hogyan használd:</strong> Válassz egy hibaforrást a bal oldali panelen, és figyeld meg a "Component Health Matrix" szelektív izolációs képességét.</p>
             </div>
-            
             <div style="margin-bottom: 20px;">
                 <button class="btn-launch" style="width:auto; padding:10px 30px; display:inline-block; margin-right:10px;" onclick="closeModalAndRun()">Load Solar Panel Demo</button>
                 <button class="btn-launch" style="width:auto; padding:10px 30px; border-color:#555; color:#aaa; display:inline-block;" onclick="document.getElementById('intro-modal').style.display='none'">Manual Config</button>
             </div>
-
-            <div class="sys-req">
-                ⚠ OPTIMAL DISPLAY: 1920x1080 (DESKTOP) | MINIMUM VIEWPORT WIDTH: 1280px
-            </div>
+            <div class="sys-req">⚠ OPTIMAL DISPLAY: 1920x1080 (DESKTOP) | MINIMUM VIEWPORT WIDTH: 1280px</div>
         </div>
     </div>
 

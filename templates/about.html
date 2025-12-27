@@ -6,13 +6,14 @@
     <title>MetaSpace | Methodology</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
-        /* Egyedi override-ok a szöveges oldalhoz */
         .doc-container {
             max-width: 1000px;
             margin: 0 auto;
             padding: 40px 20px;
             display: grid;
             gap: 30px;
+            /* Hogy a footer lecsússzon, ha rövid a tartalom */
+            flex: 1; 
         }
         .section-header {
             border-bottom: 1px solid var(--neon-cyan);
@@ -23,22 +24,27 @@
             font-size: 18px;
             letter-spacing: 2px;
             text-transform: uppercase;
+            display: flex;
+            align-items: center;
         }
-        p { color: var(--text-main); line-height: 1.8; font-size: 16px; margin-bottom: 20px; }
-        strong { color: var(--neon-cyan); }
-        
-        .arch-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
+        .section-header::before { content: '►'; margin-right: 10px; font-size: 0.8em; color: var(--neon-blue); }
+        p { color: var(--text-main); line-height: 1.8; font-size: 16px; margin-bottom: 20px; text-align: justify; }
+        strong { color: var(--neon-cyan); font-weight: bold; }
+        .arch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
         .arch-card {
-            background: rgba(0,0,0,0.4);
-            border-left: 2px solid var(--neon-blue);
-            padding: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left-width: 3px; 
+            padding: 20px;
+            transition: transform 0.3s, background 0.3s;
         }
-        .arch-num { font-family: var(--hud-font); font-size: 24px; color: var(--neon-blue); opacity: 0.5; margin-bottom: 10px; display:block; }
+        .arch-card:hover { transform: translateY(-5px); background: rgba(0, 243, 255, 0.05); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .arch-num { font-family: var(--hud-font); font-size: 24px; opacity: 0.8; margin-bottom: 10px; display: block; }
+        .terminal-block {
+            background: rgba(0, 10, 20, 0.9); padding: 20px; font-family: 'Courier New', monospace; font-size: 13px; color: var(--success-green);
+            border: 1px solid #333; border-radius: 4px; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); overflow-x: auto;
+        }
+        .header-btn { padding: 8px 20px; text-decoration: none; font-size: 13px; width: auto; margin-top: 0; display: inline-block; }
     </style>
 </head>
 <body>
@@ -48,48 +54,46 @@
             <span style="font-size:24px;">❖</span> MetaSpace<span style="opacity:0.6; font-size:0.7em; margin-left:5px;">.bio / DOCS</span>
         </div>
         <div>
-            <a href="/" class="btn-launch" style="padding: 10px 20px; text-decoration: none; font-size: 14px;">
-                ◀ RETURN TO SIMULATOR
-            </a>
+            <a href="/" class="btn-launch header-btn">◀ RETURN TO SIMULATOR</a>
         </div>
     </header>
 
     <div class="doc-container">
-
         <section class="panel">
-            <div class="section-header">Mission Statement</div>
+            <div class="section-header">Mission Statement & Context</div>
             <p>
                 A <strong>MetaSpace</strong> projekt célja egy determinisztikus, formálisan igazolt integritás-réteg létrehozása autonóm rendszerek számára. A jelenlegi szimuláció a <strong>NASA Landsat-9</strong> műhold digitális ikerpárját használja annak demonstrálására, hogyan előzhető meg a katasztrofális meghibásodás fizikai invariánsok (megmaradási törvények) valós idejű ellenőrzésével.
+            </p>
+            <p style="margin-bottom:0; color:var(--text-dim); font-size:0.9em; border-top:1px solid #333; padding-top:10px;">
+                <em>*Ez az eszköz nem használ fekete doboz AI/ML megoldásokat. Minden döntés visszakövethető (White-Box Logic).</em>
             </p>
         </section>
 
         <section class="panel">
-            <div class="section-header">Bio-Architecture Levels</div>
-            <p>A rendszer nem monolitikus, hanem biológiai analógiára épülő hierarchikus védelmi vonalakat alkalmaz:</p>
-            
+            <div class="section-header">Bio-Architecture Levels (v2.0)</div>
             <div class="arch-grid">
-                <div class="arch-card">
-                    <span class="arch-num">LVL 01</span>
-                    <div style="color:var(--text-main); font-weight:bold; margin-bottom:5px;">CELL (Sejt)</div>
+                <div class="arch-card" style="border-left-color: var(--neon-cyan);">
+                    <span class="arch-num" style="color:var(--neon-cyan);">LVL 01</span>
+                    <div style="color:var(--text-main); font-weight:bold; margin-bottom:5px; text-transform:uppercase;">CELL (Sejt)</div>
                     <div style="font-size:14px; color:var(--text-dim);">
                         Hardver komponens szint. Öndiagnózis és "Silent Drop" izoláció.
-                        <br><em>Pl: Napelem cella, Star Tracker szenzor.</em>
+                        <br><br><em>Példa: Solar_Panel_Left, Star_Tracker_A.</em>
                     </div>
                 </div>
-                <div class="arch-card" style="border-color: var(--warning-yellow);">
+                <div class="arch-card" style="border-left-color: var(--warning-yellow);">
                     <span class="arch-num" style="color:var(--warning-yellow);">LVL 02</span>
-                    <div style="color:var(--text-main); font-weight:bold; margin-bottom:5px;">ORGAN (Szerv)</div>
+                    <div style="color:var(--text-main); font-weight:bold; margin-bottom:5px; text-transform:uppercase;">ORGAN (Szerv)</div>
                     <div style="font-size:14px; color:var(--text-dim);">
                         Alrendszer szint. Redundáns egységek "Voting Logic" alapján szűrik a hibás adatot.
-                        <br><em>Pl: GNC (Navigáció), EPS (Energia).</em>
+                        <br><br><em>Példa: GNC (Navigáció), EPS (Energia).</em>
                     </div>
                 </div>
-                <div class="arch-card" style="border-color: var(--alert-red);">
+                <div class="arch-card" style="border-left-color: var(--alert-red);">
                     <span class="arch-num" style="color:var(--alert-red);">LVL 03</span>
-                    <div style="color:var(--text-main); font-weight:bold; margin-bottom:5px;">ORGANISM (Szervezet)</div>
+                    <div style="color:var(--text-main); font-weight:bold; margin-bottom:5px; text-transform:uppercase;">ORGANISM (Szervezet)</div>
                     <div style="font-size:14px; color:var(--text-dim);">
-                        Küldetés szint. Globális invariánsok (pl. Energia-megmaradás) felügyelete.
-                        <br><em>Pl: Safe Mode, Deorbiting.</em>
+                        Küldetés szint. Globális invariánsok felügyelete a Z3 Solverrel.
+                        <br><br><em>Példa: Safe Mode, Deorbiting.</em>
                     </div>
                 </div>
             </div>
@@ -97,31 +101,33 @@
 
         <section class="panel">
             <div class="section-header">Formal Verification (TRL-4)</div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px;">
+            <div style="display:grid; grid-template-columns: 1fr; gap:30px;">
                 <div>
                     <p>
-                        A hagyományos <strong>EKF (Extended Kalman Filter)</strong> rendszerek valószínűségi alapon működnek, így "step-function" hibák esetén hajlamosak a késleltetett reakcióra ("vakrepülés").
-                    </p>
-                    <p>
-                        A MetaSpace ezzel szemben <strong>SMT (Satisfiability Modulo Theories)</strong> logikát használ. Minden szenzoradatnak meg kell felelnie a Z3 Solver által felügyelt fizikai kényszereknek.
+                        A hagyományos <strong>EKF (Extended Kalman Filter)</strong> rendszerek valószínűségi alapon működnek, így "step-function" hibák esetén hajlamosak a késleltetett reakcióra. A MetaSpace ezzel szemben <strong>SMT</strong> logikát használ.
                     </p>
                 </div>
-                <div style="background:rgba(0,0,0,0.3); padding:15px; font-family:monospace; font-size:12px; color:var(--success-green); border:1px solid #333;">
-                    > ASSERT(P_in >= P_out)<br>
+                <div class="terminal-block">
+                    > INPUT: Solar_Array_B (Voltage=0V)<br>
+                    > ASSERT(P_in >= P_out_load)<br>
                     > CHECKING INVARIANT...<br>
-                    > VIOLATION DETECTED @ T+23.4s<br>
+                    <span style="color:var(--alert-red); font-weight:bold;">> VIOLATION DETECTED @ T+23.4s</span><br>
                     > ACTION: ISOLATE(Solar_Array_B)<br>
-                    > RESULT: SATISFIED<br>
-                    > SYSTEM STATE: SAFE
+                    > SYSTEM STATE: <span style="color:var(--neon-cyan);">SAFE (DEGRADED)</span>
                 </div>
             </div>
         </section>
-
-        <div style="text-align:center; color:var(--text-dim); font-size:12px; margin-top:20px;">
-            MetaSpace Project v2.0 | Internal Research Tool | Security Clearance: LEVEL 4
-        </div>
-
     </div>
+
+    <footer class="mission-footer">
+        <div>
+            METASPACE OPS | REF: MS-V2.1-RC3 | <span style="opacity:0.6">INTERNAL USE ONLY</span>
+        </div>
+        <div>
+            <span class="footer-status-dot"></span> LINK ACTIVE | 
+            <a href="https://github.com/lemonscripter/MetaSpace-Drone-Shield" target="_blank">SECURE REPO ACCESS &rarr;</a>
+        </div>
+    </footer>
 
 </body>
 </html>
