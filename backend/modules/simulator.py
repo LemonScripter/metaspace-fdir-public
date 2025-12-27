@@ -6,7 +6,9 @@ import time
 from datetime import datetime
 from .landsat9 import Landsat9Model
 
-# Megpróbáljuk importálni a SecureBridge-et, de nem omlunk össze, ha nincs meg
+# --- BIZTONSÁGI MODUL BETÖLTÉSE ---
+# Megpróbáljuk importálni a SecureBridge-et, de nem omlunk össze, ha nincs meg.
+# Ez biztosítja a kompatibilitást a titkosított és a nyílt rendszerek között is.
 try:
     from .secure_bridge import SecureBridge
 except ImportError:
@@ -19,22 +21,21 @@ class SimulationEngine:
     Ez a központi vezérlő egység, amely összeköti a Flask API-t 
     a mélyszintű fizikai modellel (Landsat9Model).
     
-    Feladatai:
-    1. A szimulációs környezet inicializálása (SecureBridge).
-    2. A v2.0 Bio-Architektúra példányosítása.
-    3. Időbeli léptetés (Time-stepping) és hiba-injektálás vezérlése.
-    4. Az eredmények strukturált mentése (Audit Trail).
+    A v2.0 Bio-Architektúra változásai:
+    - A fizikai számításokat (Energia, Pálya) delegálja a Landsat9Model-nek.
+    - Felelős a 'Sejt' és 'Szerv' szintű hibák időzített injektálásáért.
+    - Kezeli az Audit Trail (JSON) mentését a results mappába.
     """
 
     def __init__(self):
         self.results_cache = {}
         
-        # Könyvtárstruktúra beállítása
+        # --- KÖNYVTÁRSTRUKTÚRA BEÁLLÍTÁSA ---
         # Visszalépünk a gyökérkönyvtárba (backend/modules -> backend -> root)
         self.base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         self.results_dir = os.path.join(self.base_dir, "results")
         
-        # Eredménykönyvtár létrehozása, ha nem létezik
+        # Eredménykönyvtár létrehozása, ha nem létezik (Error Handling)
         if not os.path.exists(self.results_dir):
             try:
                 os.makedirs(self.results_dir)
@@ -42,7 +43,7 @@ class SimulationEngine:
             except OSError as e:
                 print(f"[SIMULATOR] ERROR creating results directory: {e}")
 
-        # Biztonsági modul inicializálása (Legacy support)
+        # Biztonsági modul inicializálása (Legacy support & Encryption)
         self._init_security()
 
     def _init_security(self):
@@ -68,7 +69,7 @@ class SimulationEngine:
         A fő szimulációs ciklus futtatása.
         
         Args:
-            scenario (str): A kiválasztott hiba típusa (pl. 'solar_panel').
+            scenario (str): A kiválasztott hiba típusa (pl. 'solar_panel', 'gps_antenna').
             duration (int): A szimuláció hossza napokban.
             
         Returns:
@@ -85,8 +86,8 @@ class SimulationEngine:
         # a Subsystems (EPS, GNC) és Components (Sejt) logikát.
         satellite = Landsat9Model()
         
-        # 2. HIBA IDŐZÍTÉS (Randomizálás)
-        # A hiba ne azonnal történjen, hanem a futamidő 20%-a és 80%-a között.
+        # 2. HIBA IDŐZÍTÉS (Sztochasztikus Injektálás)
+        # A hiba ne azonnal történjen, hanem a futamidő 20%-a és 80%-a között véletlenszerűen.
         min_day = max(2, int(duration * 0.2))
         max_day = max(min_day + 1, int(duration * 0.8))
         failure_day = random.randint(min_day, max_day)
@@ -96,9 +97,9 @@ class SimulationEngine:
         
         print(f"[SIMULATOR] Stochastic Failure Injection scheduled for Day {failure_day} (T+{failure_minute_start} min)")
 
-        # 3. SZIMULÁCIÓS LOOP
-        # Óránkénti mintavételezést használunk a gyors válaszidő érdekében,
-        # de a Landsat9Model a háttérben kezeli a fizikai változókat.
+        # 3. SZIMULÁCIÓS LOOP (Time-Stepping)
+        # Óránkénti mintavételezést használunk a gyors válaszidő érdekében (Frontend UX),
+        # de a Landsat9Model a háttérben precízen kezeli a fizikai változókat.
         dt_minutes = 60 
         total_minutes = duration * 24 * 60
         
@@ -117,16 +118,21 @@ class SimulationEngine:
                     failure_triggered = True
                     print(f"[SIMULATOR] >> INJECTION TRIGGERED: {scenario} at T+{t}min")
 
-            # --- V2 CORE LOGIC HÍVÁS ---
-            # Ez a sor a lelke mindennek: meghívjuk a fizikai modellt.
-            # A visszatérő 'telemetry' dictionary tartalmazza az EPS és GNC állapotokat.
-            telemetry = satellite.simulate_step(dt_minutes, failure_mode=active_failure)
+            # --- V2 CORE LOGIC HÍVÁS (JAVÍTVA) ---
+            # Itt volt a hiba: 'failure_mode' helyett 'current_failure'-t használunk,
+            # hogy egyezzen a landsat9.py definíciójával.
+            try:
+                telemetry = satellite.simulate_step(dt_minutes, current_failure=active_failure)
+            except TypeError as e:
+                # Végső védelem, ha a modell API megváltozna
+                print(f"[SIMULATOR CRITICAL] API Mismatch in simulate_step: {e}")
+                raise e
             
-            # Kiegészítjük metaadatokkal a frontend számára
+            # Kiegészítjük metaadatokkal a frontend számára (pl. grafikon X tengely)
             telemetry['day_float'] = round(current_day_float, 2)
             telemetry['timestamp_min'] = t
             
-            # Hozzáadjuk a történelmet
+            # Hozzáadjuk a történelmet a memóriához
             history.append(telemetry)
 
         # 4. EREDMÉNY CSOMAG ÖSSZEÁLLÍTÁSA
@@ -142,9 +148,9 @@ class SimulationEngine:
             'data_points_count': len(history),
             'execution_time_sec': execution_time,
             'model_version': 'v2.0 (Bio-Architecture)',
-            # Az utolsó állapotot elküldjük, hogy lássuk, túlélte-e
+            # Az utolsó állapotot elküldjük, hogy lássuk, túlélte-e (Final Status)
             'final_status': history[-1],
-            # A teljes logot is elmentjük, ha részletes elemzés kell
+            # A teljes logot is elmentjük, ha részletes elemzés kell (Full Log)
             'telemetry_log': history 
         }
 
