@@ -10,17 +10,23 @@
 <body>
 
     <header>
-        <div class="brand">
-            <span style="font-size:24px;">❖</span> MetaSpace<span style="opacity:0.6; font-size:0.7em; margin-left:5px;">.bio v2.0</span>
-        </div>
-        <div class="status-bar">
-            <div class="status-item">SYSTEM: <span style="color:var(--success-green)">ONLINE</span></div>
-            <div class="status-item">LOGIC: <span style="color:var(--neon-blue)">DETERMINISTIC</span></div>
-            <div class="status-item">SOLVER: <span id="live-status" style="color:var(--warning-yellow)">STANDBY</span></div>
-        </div>
-        <div>
-            <a href="/about" style="color:var(--neon-cyan); text-decoration:none; font-size:12px; border:1px solid var(--neon-cyan); padding:5px 10px;">DOCS / METHODOLOGY</a>
-        </div>
+    <div class="brand">
+        ❖ METASPACE <span style="opacity:0.5; font-size:0.8em; margin-left:5px;">.BIO V2.0</span>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-item">SYSTEM: <span style="color:var(--success-green)">ONLINE</span></div>
+        <div class="status-item">LOGIC: <span style="color:var(--neon-cyan)">DETERMINISTIC</span></div>
+        <div class="status-item">SOLVER: <span style="color:var(--success-green)">VERIFIED (SAFE)</span></div>
+    </div>
+
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <a href="/v3-sandbox" class="btn-launch" style="border-color: var(--warning-yellow); color: var(--warning-yellow); text-decoration: none; padding: 5px 15px; font-size: 11px;">
+            <span style="font-size: 12px; margin-right: 5px;">⚡</span> V3 NEURAL SANDBOX
+        </a>
+        
+        <a href="/docs" class="btn-launch" style="text-decoration: none; padding: 5px 15px; font-size: 11px;">DOCS / METHODOLOGY</a>
+    </div>
     </header>
 
     <div class="mission-control">

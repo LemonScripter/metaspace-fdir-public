@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetaSpace V3.2 | Bio-Code Modulation</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        /* --- TELJES V3 HUD LAYOUT --- */
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: var(--bg-deep);
+        }
+
+        header { flex-shrink: 0; }
+
+        .sandbox-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 20px;
+            padding: 20px;
+            flex-grow: 1;
+            min-width: var(--min-viewport-width);
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        #neural-canvas {
+            background: rgba(0, 5, 10, 0.6);
+            border: 1px solid rgba(0, 243, 255, 0.15);
+            border-radius: 4px;
+            position: relative;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+            height: 100%;
+        }
+
+        .v3-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        #gip-terminal {
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #222;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            flex-grow: 1;
+            overflow-y: auto;
+            color: var(--success-green);
+            box-shadow: inset 0 0 15px rgba(0,0,0,1);
+            min-height: 250px;
+        }
+
+        /* Regen Slider UI */
+        .slider-panel {
+            background: rgba(0, 243, 255, 0.05);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            padding: 15px;
+        }
+
+        .regen-slider {
+            width: 100%;
+            cursor: pointer;
+            accent-color: var(--neon-cyan);
+            margin: 10px 0;
+        }
+
+        .mission-footer {
+            flex-shrink: 0;
+            height: 50px;
+            background: rgba(5, 5, 5, 1);
+            border-top: 1px solid var(--neon-cyan);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        /* D3.js Vizuális elemek */
+        .node-circle { cursor: crosshair; }
+        .node-text {
+            font-family: var(--hud-font);
+            font-size: 11px;
+            fill: var(--text-main);
+            pointer-events: none;
+            text-transform: uppercase;
+        }
+        
+        .critical-alert {
+            background: rgba(255, 42, 42, 0.1);
+            border: 1px solid var(--alert-red);
+            padding: 12px;
+            color: var(--alert-red);
+            font-family: var(--hud-font);
+            font-size: 11px;
+            display: none;
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes healing-pulse {
+            0% { stroke-width: 2px; stroke-opacity: 1; }
+            50% { stroke-width: 8px; stroke-opacity: 0.4; }
+            100% { stroke-width: 2px; stroke-opacity: 1; }
+        }
+        .healing-active { animation: healing-pulse 1.5s infinite; stroke: white !important; }
+        
+        .panel-title {
+            font-family: var(--hud-font);
+            font-size: 13px;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+            padding-bottom: 8px;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <span style="font-size:24px;">❖</span> MetaSpace<span style="opacity:0.6; font-size:0.7em; margin-left:5px;">.bio V3.2 MODULATION</span>
+        </div>
+        <div class="status-bar">
+            <div class="status-item">FEASIBILITY: <span id="feasibility-val" style="color:var(--warning-yellow)">100%</span></div>
+            <div class="status-item">REGEN SPEED: <span id="regen-rate-disp" style="color:var(--success-green)">8.5%</span></div>
+        </div>
+        <div>
+            <a href="/" class="btn-launch" style="padding: 5px 15px; font-size: 10px; text-decoration: none; width: auto;">EXIT</a>
+        </div>
+    </header>
+
+    <main class="sandbox-layout">
+        <section id="neural-canvas">
+            <div style="position:absolute; top:20px; left:20px; pointer-events:none; z-index: 10;">
+                <div class="panel-title">Autonomous Bio-Code Network</div>
+                <div style="font-size:10px; color:var(--text-dim)">Click nodes to inject failure | Modulation active</div>
+            </div>
+            <svg id="fractal-svg" width="100%" height="100%"></svg>
+        </section>
+
+        <aside class="v3-sidebar">
+            <div class="panel">
+                <div class="panel-title">Bio-Code Configuration</div>
+                <div class="slider-panel">
+                    <label style="font-size:10px; color:var(--text-dim); text-transform:uppercase;">Repair Velocity (%)</label>
+                    <input type="range" min="1" max="50" step="0.5" value="8.5" class="regen-slider" id="regen-rate-slider" oninput="updateRegenRate(this.value)">
+                </div>
+                <button class="btn-launch" onclick="executeV3Chaos('emp_pulse')" style="border-color: var(--alert-red); color: var(--alert-red); margin-top:10px;">
+                    INJECT EMP FRAGMENTATION
+                </button>
+            </div>
+
+            <div class="critical-alert" id="master-failure-alert">
+                [!] EMERGENCY: MASTER MIGRATION ACTIVE
+            </div>
+
+            <div class="panel" style="flex-grow:1; display:flex; flex-direction:column;">
+                <div class="panel-title">Metacode Integrity Log</div>
+                <div id="gip-terminal">
+                    > GIP v3.2 Modulation mode active.<br>
+                    > Self-healing parameters ready.
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <footer class="mission-footer">
+        <div>LEMONSCRIPT LABORATORY // V3.2</div>
+    </footer>
+
+    <script>
+        /* --- D3.JS SZIMULÁCIÓ --- */
+        const nodes = [
+            { id: "CPU", name: "Main CPU Core", health: 100, master: true },
+            { id: "ST_A", name: "Star Tracker A", health: 100, master: false },
+            { id: "ST_B", name: "Star Tracker B", health: 100, master: false },
+            { id: "EPS", name: "Power Controller", health: 100, master: false },
+            { id: "ANT", name: "High-Gain Antenna", health: 100, master: false },
+            { id: "BATT", name: "Battery Array", health: 100, master: false }
+        ];
+
+        const links = [
+            { source: "CPU", target: "ST_A" }, { source: "CPU", target: "ST_B" },
+            { source: "CPU", target: "EPS" }, { source: "EPS", target: "BATT" },
+            { source: "ST_A", target: "ANT" }, { source: "ST_B", target: "ANT" },
+            { source: "ANT", target: "CPU" }
+        ];
+
+        const svg = d3.select("#fractal-svg");
+        const canvas = document.getElementById('neural-canvas');
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
+
+        const simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).id(d => d.id).distance(140))
+            .force("charge", d3.forceManyBody().strength(-700))
+            .force("center", d3.forceCenter(width / 2, height / 2));
+
+        const link = svg.append("g").selectAll("line").data(links).join("line")
+            .attr("class", "link-line").attr("stroke", "var(--neon-cyan)").attr("stroke-opacity", 0.3);
+
+        const node = svg.append("g").selectAll("circle").data(nodes).join("circle")
+            .attr("class", "node-circle").attr("r", 15)
+            .attr("fill", d => d.master ? "var(--warning-yellow)" : "var(--neon-cyan)")
+            .attr("stroke", "#000").attr("stroke-width", 2)
+            .on("click", (e, d) => executeV3Chaos('single', d.id));
+
+        const label = svg.append("g").selectAll("text").data(nodes).join("text")
+            .attr("class", "node-text").text(d => d.name).attr("dx", 22).attr("dy", 5);
+
+        simulation.on("tick", () => {
+            link.attr("x1", d => d.source.x).attr("y1", d => d.source.y).attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+            node.attr("cx", d => d.x).attr("cy", d => d.y);
+            label.attr("x", d => d.x).attr("y", d => d.y);
+        });
+
+        /* --- API INTERAKCIÓ --- */
+
+        async function updateRegenRate(val) {
+            const disp = document.getElementById('regen-rate-disp');
+            if (disp) disp.innerText = val + "%";
+            try {
+                await fetch('/api/v3/config', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ regen_rate: val })
+                });
+            } catch (e) { console.error("Config update failed", e); }
+        }
+
+        async function executeV3Chaos(type, targetId = null) {
+            let killed = (type === 'single') ? [targetId] : nodes.filter(() => Math.random() > 0.6).map(n => n.id);
+            try {
+                const response = await fetch('/api/v3/chaos', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ killed_nodes: killed })
+                });
+                const result = await response.json();
+                updateUI(result.data);
+            } catch (e) { console.error("Chaos injection failed", e); }
+        }
+
+        setInterval(async () => {
+            try {
+                const response = await fetch('/api/v3/regen', { method: 'POST' });
+                const result = await response.json();
+                updateUI(result.data);
+            } catch (e) { }
+        }, 3000);
+
+        function updateUI(data) {
+            if (!data) return;
+            const terminal = document.getElementById('gip-terminal');
+            const alertPanel = document.getElementById('master-failure-alert');
+            const feasVal = document.getElementById('feasibility-val');
+            
+            data.nodes.forEach(sn => {
+                const ln = nodes.find(n => n.id === sn.id);
+                if (ln) { ln.health = sn.health; ln.master = sn.is_master; }
+            });
+
+            node.transition().duration(800)
+                .attr("fill", d => d.health <= 0 ? "#111" : (d.master ? "var(--warning-yellow)" : "var(--neon-cyan)"))
+                .attr("r", d => d.health <= 0 ? 8 : (d.health < 100 ? 18 : 15))
+                .attr("class", d => d.health > 0 && d.health < 100 ? "node-circle healing-active" : "node-circle");
+
+            link.classed("active", d => d.source.health > 0 && d.target.health > 0)
+                .attr("stroke-opacity", d => (d.source.health <= 0 || d.target.health <= 0) ? 0.05 : 0.4);
+
+            if (feasVal) feasVal.innerText = data.feasibility + "%";
+            
+            if (data.feasibility === 100 && data.events.length === 0 && terminal && terminal.innerHTML.includes('SUCCESS')) {
+                setTimeout(() => { terminal.innerHTML = "> Integrity Verified. System Nominal."; }, 5000);
+            }
+
+            if (data.events.length > 0 && terminal) {
+                data.events.forEach(ev => {
+                    const color = ev.includes('SUCCESS') || ev.includes('BIO-CODE') ? 'var(--success-green)' : 'var(--alert-red)';
+                    terminal.innerHTML += `<br><span style="color:${color}">> ${ev}</span>`;
+                });
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+            if (alertPanel) alertPanel.style.display = (data.feasibility < 100) ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

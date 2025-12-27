@@ -4,117 +4,93 @@ import sys
 import os
 import traceback
 
-# --- PATH CONFIGURATION ---
-# Meghatározzuk a pontos elérési utakat, hogy a Railway biztosan megtalálja a fájlokat
+# --- PATH & IMPORT CONFIGURATION ---
 base_dir = os.path.dirname(os.path.abspath(__file__))
 backend_dir = os.path.join(base_dir, 'backend')
-
-# Hozzáadjuk a rendszer útvonalakhoz a backend mappát
 if backend_dir not in sys.path:
     sys.path.append(backend_dir)
 
-print(f"[SYSTEM] Base Dir: {base_dir}")
-print(f"[SYSTEM] Backend Dir: {backend_dir}")
-
-# --- MODULE IMPORT ---
-# Biztonságos importálás hibakezeléssel
+# Biztonságos importálás a modulokhoz
 try:
+    from backend.modules.v3_neural_core import NeuralFractalNetwork
+    from backend.modules.simulator import SimulationEngine
+except ImportError:
+    from modules.v3_neural_core import NeuralFractalNetwork
     from modules.simulator import SimulationEngine
-    print("[SYSTEM] SUCCESS: Imported SimulationEngine from 'modules.simulator'")
-except ImportError as e:
-    print(f"[SYSTEM WARNING] Standard import failed: {e}")
-    print("[SYSTEM] Attempting fallback import...")
-    try:
-        # Ha az első nem sikerül, megpróbáljuk teljes útvonallal
-        from backend.modules.simulator import SimulationEngine
-        print("[SYSTEM] SUCCESS: Imported SimulationEngine from 'backend.modules.simulator'")
-    except ImportError as e2:
-        print(f"[SYSTEM CRITICAL] Failed to import SimulationEngine: {e2}")
-        # Itt nem állítjuk le, de a simulator változó None lesz, amit később kezelünk
-        SimulationEngine = None
 
 app = Flask(__name__)
 CORS(app)
 
-# --- INICIALIZÁLÁS ---
-print("--- METASPACE SERVER STARTUP (v2.0) ---")
+# --- ENGINE INICIALIZÁLÁS ---
+simulator = SimulationEngine() if 'SimulationEngine' in globals() else None
+v3_network = NeuralFractalNetwork()
 
-simulator = None
-if SimulationEngine:
-    try:
-        simulator = SimulationEngine()
-        print("[SYSTEM] Simulation Core v2.0 Online.")
-    except Exception as e:
-        print(f"[SYSTEM CRITICAL] Error initializing SimulationEngine: {e}")
-        traceback.print_exc()
-else:
-    print("[SYSTEM CRITICAL] SimulationEngine class is missing!")
-
-
+# --- OLDAL ROUTE-OK ---
 @app.route('/')
 def index():
-    """A fő Dashboard betöltése"""
     return render_template('index.html')
-
 
 @app.route('/about')
 def about():
-    """Az About oldal betöltése"""
     return render_template('about.html')
 
+@app.route('/v3-sandbox')
+def v3_sandbox():
+    return render_template('v3_fractal_sim.html')
+
+# --- V3 NEURAL API (Regeneráció és Káosz) ---
+@app.route('/api/v3/chaos', methods=['POST'])
+def v3_chaos_api():
+    try:
+        data = request.json
+        killed_nodes = data.get('killed_nodes', [])
+        # Lefuttatja a pusztítást és a Master Migration-t
+        results = v3_network.inject_chaos_and_calculate(killed_nodes)
+        return jsonify({"status": "success", "data": results})
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/v3/regen', methods=['POST'])
+def v3_regen_api():
+    try:
+        # Lefuttatja az autonóm öngyógyító ciklust
+        regen_results = v3_network.process_regeneration()
+        return jsonify({"status": "success", "data": regen_results})
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+# --- V2 SIMULATOR API ---
+@app.route('/api/simulate', methods=['POST'])
+def run_simulation():
+    if not simulator:
+        return jsonify({"status": "error", "message": "Simulator core offline."}), 500
+    try:
+        data = request.json
+        sim_id = simulator.run(data.get('scenario', 'nominal'), int(data.get('duration', 60)))
+        results = simulator.get_results(sim_id)
+        return jsonify({"status": "success", "sim_id": sim_id, "data": results})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/v3/config', methods=['POST'])
+def v3_config_api():
+    try:
+        data = request.json
+        v3_network.set_regen_rate(data.get('regen_rate', 8.5))
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    """Egyszerű ellenőrzés, hogy fut-e a szerver"""
-    status = "online" if simulator else "degraded (simulator missing)"
     return jsonify({
-        "status": status, 
-        "system": "MetaSpace Simulator v2.0",
-        "backend_path": backend_dir
+        "status": "online",
+        "v3_active": v3_network is not None,
+        "v2_active": simulator is not None
     })
 
-
-@app.route('/api/simulate', methods=['POST'])
-def run_simulation():
-    """
-    Indít egy szimulációt a kért paraméterekkel.
-    JSON Body: { "scenario": "gps_antenna", "duration": 60 }
-    """
-    if not simulator:
-        return jsonify({"status": "error", "message": "Simulator core is not initialized."}), 500
-
-    try:
-        data = request.json
-        # Biztonságos adatkinyerés alapértelmezett értékekkel
-        scenario = data.get('scenario', 'nominal')
-        # Fontos: int-re kasztoljuk, mert a JSON stringként küldheti
-        duration = int(data.get('duration', 60))
-        
-        print(f"[API] Simulation Request: Scenario='{scenario}', Duration={duration} days")
-        
-        # 1. Szimuláció futtatása (visszaad egy UUID-t)
-        sim_id = simulator.run(scenario, duration)
-        
-        # 2. Azonnali eredmény lekérés (mivel a frontend várja a grafikont)
-        results = simulator.get_results(sim_id)
-        
-        if not results:
-            print(f"[API ERROR] No results found for ID: {sim_id}")
-            return jsonify({"status": "error", "message": "Simulation finished but produced no data."}), 500
-        
-        return jsonify({
-            "status": "success",
-            "sim_id": sim_id,
-            "data": results
-        })
-        
-    except Exception as e:
-        print(f"[API CRITICAL ERROR] Exception during simulation: {str(e)}")
-        traceback.print_exc() # Kiírja a teljes hibaüzenetet a logba
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-
 if __name__ == '__main__':
-    # A portot a környezeti változóból olvassuk (Railway miatt fontos!)
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)

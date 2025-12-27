@@ -522,3 +522,14 @@ select:focus, input:focus {
     margin-right: 5px;
     box-shadow: 0 0 5px var(--success-green);
 }
+
+.link-line.active {
+    stroke-width: 2px;
+    stroke-dasharray: 8, 4;
+    animation: pulse-flow 1s linear infinite;
+    stroke: var(--neon-cyan);
+}
+
+@keyframes pulse-flow {
+    to { stroke-dashoffset: -12; }
+}
