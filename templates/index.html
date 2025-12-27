@@ -3,225 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MetaSpace | Deterministic FDIR Simulator</title>
+    <title>MetaSpace | Mission Control</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        /* --- KUTATÓI KIEGÉSZÍTÉSEK --- */
-        
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 1000;
-            display: flex; justify-content: center; align-items: center;
-        }
-        .modal-content {
-            background: #0f1820; border: 1px solid #66fcf1;
-            padding: 40px; max-width: 800px; width: 90%;
-            box-shadow: 0 0 50px rgba(102, 252, 241, 0.2);
-            position: relative;
-        }
-        .modal-header { border-bottom: 1px solid #333; margin-bottom: 20px; padding-bottom: 10px; }
-        .modal-close {
-            position: absolute; top: 20px; right: 20px;
-            color: #66fcf1; cursor: pointer; font-size: 24px; font-weight: bold;
-        }
-        
-        .doc-bar {
-            background: #0b1219; border-bottom: 1px solid #333;
-            padding: 10px 40px; display: flex; gap: 20px; font-size: 0.85em; flex-wrap: wrap;
-        }
-        .doc-link { color: #8892b0; text-decoration: none; border-bottom: 1px dotted #555; transition: all 0.3s; }
-        .doc-link:hover { color: #66fcf1; border-bottom: 1px solid #66fcf1; }
-
-        .log-entry { font-family: 'Courier New', monospace; font-size: 11px; border-bottom: 1px solid #222; padding: 2px 0; }
-        .log-timestamp { color: #555; margin-right: 10px; }
-        .log-type { font-weight: bold; margin-right: 10px; }
-        .log-msg { color: #ccc; }
-        .log-crit { color: #e74c3c; }
-        .log-ok { color: #2ecc71; }
-
-        .placeholder-state {
-            text-align: center; padding: 50px; color: #555; border: 2px dashed #333;
-            height: 100%; display: flex; flex-direction: column; justify-content: center;
-        }
-
-        body { display: flex; flex-direction: column; min-height: 100vh; margin: 0; background: #050a10; color: #c5c6c7; font-family: 'Roboto', sans-serif; }
-        .container { flex: 1; display: flex; max-width: 1600px; margin: 0 auto; width: 100%; }
-        .chart-container { position: relative; height: 350px; width: 100%; }
-        
-        footer { margin-top: 40px; padding: 40px; border-top: 1px solid #333; background: #020406; font-size: 0.9em; color: #666; }
-        .footer-grid { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 40px; }
-        .footer-col h4 { color: #fff; margin-bottom: 20px; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
-        .footer-col a { display: block; color: #8892b0; text-decoration: none; margin-bottom: 10px; transition: color 0.3s; }
-        .footer-col a:hover { color: #66fcf1; }
-        .contact-btn { background: transparent; border: 1px solid #66fcf1; color: #66fcf1; padding: 8px 15px; cursor: pointer; border-radius: 4px; transition: all 0.3s; }
-        .contact-btn:hover { background: #66fcf1; color: #000; }
-        .copyright-bar { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.8em; }
-        
-        @media (max-width: 768px) { 
-            .footer-grid { grid-template-columns: 1fr; } 
-            .container { flex-direction: column; }
-            .doc-bar { display: none; }
-        }
-    </style>
 </head>
 <body>
 
-    <div class="doc-bar">
-        <span style="color:#666; font-weight:bold;">REFERENCES:</span>
-        <a href="https://github.com/lemonscripter/MetaSpace-Drone-Shield" target="_blank" class="doc-link">Formal Verification Paper (PDF)</a>
-        <a href="https://github.com/lemonscripter/MetaSpace-Drone-Shield" target="_blank" class="doc-link">Formal Semantics (SMT/Z3)</a>
-        <a href="https://github.com/lemonscripter/MetaSpace-Drone-Shield" target="_blank" class="doc-link">Assurance Case (GSN)</a>
-        <a href="https://github.com/lemonscripter/MetaSpace-Drone-Shield" target="_blank" class="doc-link">Validation Roadmap</a>
-    </div>
-
     <header>
-        <div class="logo">
-            <h1>MetaSpace<span style="font-size:0.5em; opacity:0.7">.research</span></h1>
-            <small>Deterministic FDIR & Invariant Checking Simulator</small>
+        <div class="brand">
+            <span style="font-size:24px;">❖</span> MetaSpace<span style="opacity:0.6; font-size:0.7em; margin-left:5px;">.bio v2.0</span>
         </div>
-        <div class="system-status">
-            <a href="/about" class="contact-btn" style="text-decoration:none; margin-right:15px; font-size:12px;">Methodology & About</a>
-            <span class="status-indicator online"></span> SIMULATION CORE: READY
+        <div class="status-bar">
+            <div class="status-item">SYSTEM: <span style="color:var(--success-green)">ONLINE</span></div>
+            <div class="status-item">LOGIC: <span style="color:var(--neon-blue)">DETERMINISTIC</span></div>
+            <div class="status-item">SOLVER: <span id="live-status" style="color:var(--warning-yellow)">STANDBY</span></div>
+        </div>
+        <div>
+            <a href="/about" style="color:var(--neon-cyan); text-decoration:none; font-size:12px; border:1px solid var(--neon-cyan); padding:5px 10px;">DOCS / METHODOLOGY</a>
         </div>
     </header>
 
-    <div id="intro-modal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="modal-close" onclick="document.getElementById('intro-modal').style.display='none'">&times;</span>
-            <div class="modal-header">
-                <h2 style="color:#fff; margin:0;">MetaSpace: Deterministic Autonomous Integrity</h2>
-                <small style="color:#8892b0;">Abstract & Simulation Context</small>
-            </div>
-            <div style="color:#ccc; line-height: 1.6;">
-                <p><strong>Mi ez az eszköz?</strong> Ez a szimulátor a <em>MetaSpace determinisztikus FDIR (Fault Detection, Isolation, and Recovery)</em> algoritmus validációs környezete. A NASA Landsat-9 műhold fizikai modelljét használva demonstrálja a különbséget a hagyományos sztochasztikus szűrők (EKF) és az invariáns-alapú ellenőrzés között.</p>
-                
-                <p><strong>A probléma:</strong> A hagyományos EKF (Extended Kalman Filter) rendszerek "step-function" jellegű hibák (pl. szenzor spoofing, fizikai törés) esetén hajlamosak a divergenciára ("vakrepülés").</p>
-                
-                <p><strong>A megoldás (MetaSpace):</strong> Nem valószínűségeket becsül, hanem <span style="color:#66fcf1">Formális Logikai Invariánsokat (SMT/Z3)</span> ellenőriz valós időben. Ha <code>P_out > P_in</code>, a rendszer nem átlagol, hanem azonnal izolál.</p>
-                
-                <div style="margin-top:30px; text-align:right;">
-                    <button class="contact-btn" onclick="closeModalAndRun()">
-                        Load Demo Scenario (Solar Panel Failure)
-                    </button>
-                    <button class="contact-btn" style="border-color:#555; color:#aaa;" onclick="document.getElementById('intro-modal').style.display='none'">
-                        Manual Configuration
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="container">
-        <aside class="sidebar">
-            <h2 style="font-size: 0.9em; text-transform: uppercase; color: #66fcf1;">Simulation Parameters</h2>
-            <p style="font-size:11px; color:#aaa; margin-bottom: 15px;">
-                Input variables for the Landsat-9 Digital Twin model.
-            </p>
+    <div class="mission-control">
+        
+        <aside class="panel controls-area">
+            <div class="panel-title">Flight Configuration</div>
             
-            <label>Failure Scenario</label>
-            <select id="scenario-select">
-                <option value="solar_panel">Solar Panel Structural Failure (Power Budget)</option>
-                <option value="gps_antenna">GPS Signal Loss / Drift (Kinematic)</option>
-                <option value="battery_failure">Battery Cell Short Circuit (Thermal)</option>
-                <option value="imu_drift">IMU Bias Drift (Attitude)</option>
-                <option value="nominal">Nominal Operation (Control Group)</option>
-            </select>
+            <div class="control-group">
+                <label>INJECTION SCENARIO</label>
+                <select id="scenario-select">
+                    <option value="solar_panel">Solar Panel Structural Failure</option>
+                    <option value="gps_antenna">GPS Spoofing / Signal Loss</option>
+                    <option value="battery_failure">Battery Thermal Runaway</option>
+                    <option value="imu_drift">IMU Gyro Bias Drift</option>
+                    <option value="nominal">Nominal Flight (Control)</option>
+                </select>
+            </div>
 
-            <label>Duration (Orbit Cycles / Days)</label>
-            <input type="number" id="duration-input" value="60" min="20" max="365">
+            <div class="control-group">
+                <label>MISSION DURATION (DAYS)</label>
+                <input type="number" id="duration-input" value="60" min="20" max="365">
+            </div>
 
-            <button id="sim-btn" onclick="runSimulation()">Execute Simulation & Analysis</button>
-
-            <div style="margin-top: 30px; border-top: 1px solid #444; padding-top:20px;">
-                <h2 style="font-size: 0.9em; text-transform: uppercase;">Real-time Solver Status</h2>
-                <div class="metric-box">
-                    <div style="font-size:10px; color:#aaa">INVARIANT CHECKER</div>
-                    <div id="live-status" class="metric-val" style="color:#2ecc71; font-size:14px;">STANDBY</div>
-                </div>
+            <div style="margin-top:auto;">
+                <p style="font-size:12px; color:#666; margin-bottom:10px;">
+                    *Initiating simulation will trigger the Python physics engine and SMT solver.
+                </p>
+                <button id="sim-btn" class="btn-launch" onclick="runSimulation()">
+                    EXECUTE SIMULATION
+                </button>
             </div>
         </aside>
 
-        <main class="main-panel">
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <div>
-                        <h2>Mission Feasibility Analysis</h2>
-                        <small style="color:#777;">Comparison of Stochastic (Red) vs. Deterministic (Blue) Logic</small>
-                    </div>
+        <section class="panel tactical-display">
+            <div class="panel-title">Mission Feasibility Analysis (Reliability Curve)</div>
+            <div class="chart-wrapper">
+                <div class="placeholder-state" id="chart-placeholder" style="color:#555; text-align:center; padding-top:100px;">
+                    [ AWAITING TELEMETRY DATA ]<br>
+                    <small>Select a scenario to visualize EKF vs MetaSpace performance</small>
                 </div>
-                <div class="chart-container" id="chart-wrapper">
-                    <div class="placeholder-state" id="chart-placeholder">
-                        <h3>Awaiting Simulation Data</h3>
-                        <p>Configure parameters on the left or load a demo to visualize the Mission Assurance Curve.</p>
-                        <small>X: Time (Days) | Y: Reliability Confidence (%)</small>
-                    </div>
-                    <canvas id="feasibilityChart" style="display:none;"></canvas>
-                </div>
+                <canvas id="feasibilityChart" style="display:none;"></canvas>
             </div>
+        </section>
 
-            <div class="card" style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
-                <div>
-                    <h2>Diagnostic Output</h2>
-                    <div id="narrative-box" style="font-size: 13px; line-height: 1.5; color: #ccc; height: 150px; overflow-y: auto;">
-                        <span style="color:#555;">> System initialized.</span><br>
-                        <span style="color:#555;">> Loaded kinematic model: Landsat-9 (NASA)</span><br>
-                        <span style="color:#555;">> Waiting for input...</span>
-                    </div>
-                </div>
-                <div>
-                    <h2>Invariant Verification Log</h2>
-                    <div id="bio-stream" style="font-family: monospace; font-size: 10px; background: #000; padding:10px; height: 150px; overflow-y: hidden; opacity: 0.7;">
-                        <div class="log-entry"><span class="log-timestamp">[T-0]</span> <span class="log-type">[INIT]</span> Z3 Solver Loaded.</div>
-                    </div>
-                </div>
+        <aside class="panel telemetry-bay">
+            <div class="panel-title">Component Health Matrix (Level 1)</div>
+            <div id="component-grid">
+                <div style="padding:20px; text-align:center; color:#555;">Waiting for link...</div>
             </div>
+        </aside>
 
-            <div class="card" style="margin-top: 20px;">
-                <h2 style="border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; font-size: 1.1em; color: #fff;">
-                    Subsystem & Component Health Matrix (Level 1 Status)
-                </h2>
-                <div id="component-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px;">
-                    <div class="placeholder-state" style="border:none; padding:10px; grid-column: 1 / -1;">Waiting for telemetry packet...</div>
+        <section class="panel logs-console">
+            <div style="border-right: 1px solid rgba(255,255,255,0.1); padding-right:15px;">
+                <div class="panel-title">Tactical Analysis</div>
+                <div id="narrative-box">
+                    <span style="color:#555;">> System initialized.</span><br>
+                    <span style="color:#555;">> Loaded kinematic model: Landsat-9 (NASA)</span><br>
+                    <span style="color:#555;">> Waiting for input...</span>
                 </div>
             </div>
-        </main>
+            <div>
+                <div class="panel-title">Invariant Verification Stream</div>
+                <div id="bio-stream" style="height:150px; overflow:hidden;">
+                    <div class="log-entry">[T-0] Z3 Solver Loaded.</div>
+                </div>
+            </div>
+        </section>
+
     </div>
 
-    <footer>
-        <div class="footer-grid">
-            <div class="footer-col">
-                <h4>Methodology Sources</h4>
-                <a href="https://github.com/lemonscripter/MetaSpace-Drone-Shield" target="_blank">FMEA Report &rarr;</a>
-                <a href="https://github.com/lemonscripter/MetaSpace-Drone-Shield" target="_blank">Formal Verification Paper &rarr;</a>
+    <div id="intro-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close" style="float:right; cursor:pointer; color:var(--neon-cyan); font-size:24px;" onclick="document.getElementById('intro-modal').style.display='none'">&times;</span>
+            <h2 style="color:#fff; margin-top:0; font-family:'Orbitron'">MetaSpace Validation Environment</h2>
+            <p style="color:#aaa;">Ez az eszköz a MetaSpace determinisztikus FDIR algoritmus validációs környezete (TRL-4).</p>
+            <div style="border-left: 3px solid var(--neon-cyan); padding-left:15px; margin:20px 0; color:#ddd;">
+                <p><strong>Cél:</strong> Demonstrálni a különbséget a sztochasztikus (EKF) és az invariáns-alapú (MetaSpace) hibakezelés között.</p>
+                <p><strong>Hogyan használd:</strong> Válassz egy hibaforrást a bal oldali panelen, és figyeld meg a "Component Health Matrix" szelektív izolációs képességét.</p>
             </div>
-            <div class="footer-col">
-                <h4>Core Technology</h4>
-                <p style="color:#666; font-size: 0.85em;">
-                    <strong>Logic Core:</strong> SMT-based Invariant Checking (Python/Z3)<br>
-                    <strong>Physical Model:</strong> Landsat-9 Orbital Mechanics<br>
-                    <strong>Validation:</strong> DO-178C / IEC 61508 Compliant Workflow
-                </p>
-            </div>
-            <div class="footer-col">
-                <h4>Contact</h4>
-                <button class="contact-btn" onclick="openMail()">Request Full Whitepaper</button>
-            </div>
+            <button class="btn-launch" style="width:auto; padding:10px 30px;" onclick="closeModalAndRun()">Load Solar Panel Demo</button>
+            <button class="btn-launch" style="width:auto; padding:10px 30px; border-color:#555; color:#aaa;" onclick="document.getElementById('intro-modal').style.display='none'">Manual Config</button>
         </div>
-        <div class="copyright-bar">
-            MetaSpace Project | <strong>Reference Implementation v1.4.2</strong> | Based on research by LemonScript Lab
-        </div>
-    </footer>
+    </div>
 
     <script src="/static/js/main.js"></script>
     <script>
-        function openMail() {
-            window.location.href = "mailto:research@metaspace.bio";
-        }
-        
         function closeModalAndRun() {
             document.getElementById('intro-modal').style.display='none';
-            // Beállítjuk a demo paramétereket
             document.getElementById('scenario-select').value = 'solar_panel';
             runSimulation();
         }
