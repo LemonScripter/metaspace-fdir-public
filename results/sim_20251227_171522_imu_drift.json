@@ -1,0 +1,1214 @@
+{
+    "simulation_id": "sim_20251227_171522",
+    "scenario": "imu_drift",
+    "timestamp": "2025-12-27T17:15:22.058887",
+    "metaspace": {
+        "timeline": [
+            {
+                "day": 0,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "2.65",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 1,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.44",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 2,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "3.76",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 3,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "10.27",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 4,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "13.45",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 5,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "7.04",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 6,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.84",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 7,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "9.06",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 8,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.56",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 9,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.25",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 10,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.76",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 11,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.85",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 12,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.41",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 13,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.40",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 14,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "10.50",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 15,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "7.22",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 16,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "13.53",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 17,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.29",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 18,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.14",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 19,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "21.16",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 20,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.88",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 21,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.23",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 22,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "3.90",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 23,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.86",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 24,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.15",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 25,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "10.04",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 26,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.81",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 27,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "7.80",
+                "battery_level": "100.0",
+                "imu_error": "0.9648",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 28,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "1.83",
+                "battery_level": "100.0",
+                "imu_error": "1.9359",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 29,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "6.63",
+                "battery_level": "100.0",
+                "imu_error": "2.7578",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 30,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "8.90",
+                "battery_level": "100.0",
+                "imu_error": "3.7125",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 31,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "10.93",
+                "battery_level": "100.0",
+                "imu_error": "4.8066",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 32,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "8.22",
+                "battery_level": "100.0",
+                "imu_error": "5.8950",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 33,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "12.10",
+                "battery_level": "100.0",
+                "imu_error": "6.9439",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 34,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "13.87",
+                "battery_level": "100.0",
+                "imu_error": "8.0828",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 35,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "4.55",
+                "battery_level": "100.0",
+                "imu_error": "9.1021",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 36,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "7.96",
+                "battery_level": "100.0",
+                "imu_error": "10.2797",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 37,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "5.35",
+                "battery_level": "100.0",
+                "imu_error": "11.3128",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 38,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "2.95",
+                "battery_level": "100.0",
+                "imu_error": "12.3423",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 39,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "5.06",
+                "battery_level": "100.0",
+                "imu_error": "13.2693",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 40,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "11.54",
+                "battery_level": "100.0",
+                "imu_error": "14.2917",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 41,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "3.40",
+                "battery_level": "100.0",
+                "imu_error": "15.2679",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 42,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "3.85",
+                "battery_level": "100.0",
+                "imu_error": "16.5284",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 43,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "0.82",
+                "battery_level": "100.0",
+                "imu_error": "17.6805",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 44,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "6.38",
+                "battery_level": "100.0",
+                "imu_error": "18.6819",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 45,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "7.66",
+                "battery_level": "100.0",
+                "imu_error": "19.6033",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 46,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "11.04",
+                "battery_level": "100.0",
+                "imu_error": "20.5130",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 47,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "5.15",
+                "battery_level": "100.0",
+                "imu_error": "21.2942",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 48,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "3.10",
+                "battery_level": "100.0",
+                "imu_error": "22.4334",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 49,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "6.03",
+                "battery_level": "100.0",
+                "imu_error": "23.5032",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 50,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "9.21",
+                "battery_level": "100.0",
+                "imu_error": "24.4908",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 51,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "6.58",
+                "battery_level": "100.0",
+                "imu_error": "25.4395",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 52,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "1.92",
+                "battery_level": "100.0",
+                "imu_error": "26.3750",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 53,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "4.72",
+                "battery_level": "100.0",
+                "imu_error": "27.5261",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 54,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "5.90",
+                "battery_level": "100.0",
+                "imu_error": "28.5767",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 55,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "10.96",
+                "battery_level": "100.0",
+                "imu_error": "29.4555",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 56,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "10.71",
+                "battery_level": "100.0",
+                "imu_error": "30.3630",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 57,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "4.09",
+                "battery_level": "100.0",
+                "imu_error": "31.5252",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 58,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "4.13",
+                "battery_level": "100.0",
+                "imu_error": "32.7181",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            },
+            {
+                "day": 59,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "6.53",
+                "battery_level": "100.0",
+                "imu_error": "33.8190",
+                "message": "KRITIKUS: Navig\u00e1ci\u00f3s sodr\u00f3d\u00e1s! P\u00e1lyakorrekci\u00f3 sz\u00fcks\u00e9ges."
+            }
+        ]
+    },
+    "ekf": {
+        "timeline": [
+            {
+                "day": 0,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.44",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 1,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "9.68",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 2,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.23",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 3,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.16",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 4,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.02",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 5,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "7.60",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 6,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.29",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 7,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "7.62",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 8,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.55",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 9,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.51",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 10,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.42",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 11,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "11.38",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 12,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "7.51",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 13,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.28",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 14,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.02",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 15,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.11",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 16,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "9.91",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 17,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.94",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 18,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "14.27",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 19,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.98",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 20,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.18",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 21,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.27",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 22,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "7.54",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 23,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.39",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 24,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "15.47",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 25,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.26",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 26,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "10.92",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 27,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.16",
+                "battery_level": "100.0",
+                "imu_error": "1.0712",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 28,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "7.67",
+                "battery_level": "100.0",
+                "imu_error": "2.1494",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 29,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "2.88",
+                "battery_level": "100.0",
+                "imu_error": "3.1802",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 30,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "13.99",
+                "battery_level": "100.0",
+                "imu_error": "4.3262",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 31,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.03",
+                "battery_level": "100.0",
+                "imu_error": "5.5165",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 32,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "7.95",
+                "battery_level": "100.0",
+                "imu_error": "6.5750",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 33,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "11.14",
+                "battery_level": "100.0",
+                "imu_error": "7.7661",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 34,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.39",
+                "battery_level": "100.0",
+                "imu_error": "8.6983",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 35,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "10.71",
+                "battery_level": "100.0",
+                "imu_error": "9.9604",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 36,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.92",
+                "battery_level": "100.0",
+                "imu_error": "10.8554",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 37,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "10.16",
+                "battery_level": "100.0",
+                "imu_error": "12.0529",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 38,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "2.75",
+                "battery_level": "100.0",
+                "imu_error": "12.9263",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 39,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "3.13",
+                "battery_level": "100.0",
+                "imu_error": "14.0303",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 40,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "10.97",
+                "battery_level": "100.0",
+                "imu_error": "15.2457",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 41,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "2.92",
+                "battery_level": "100.0",
+                "imu_error": "16.1906",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 42,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "7.10",
+                "battery_level": "100.0",
+                "imu_error": "17.1809",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 43,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.36",
+                "battery_level": "100.0",
+                "imu_error": "18.1005",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 44,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.24",
+                "battery_level": "100.0",
+                "imu_error": "19.2900",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 45,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.47",
+                "battery_level": "100.0",
+                "imu_error": "20.7187",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 46,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "15.93",
+                "battery_level": "100.0",
+                "imu_error": "21.7096",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 47,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "9.17",
+                "battery_level": "100.0",
+                "imu_error": "22.7219",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 48,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "7.72",
+                "battery_level": "100.0",
+                "imu_error": "23.8934",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 49,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.68",
+                "battery_level": "100.0",
+                "imu_error": "24.7647",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 50,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "15.44",
+                "battery_level": "100.0",
+                "imu_error": "25.8991",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 51,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "7.71",
+                "battery_level": "100.0",
+                "imu_error": "26.9088",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 52,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.53",
+                "battery_level": "100.0",
+                "imu_error": "27.9535",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 53,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "10.79",
+                "battery_level": "100.0",
+                "imu_error": "29.0749",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 54,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.09",
+                "battery_level": "100.0",
+                "imu_error": "30.0143",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 55,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.06",
+                "battery_level": "100.0",
+                "imu_error": "30.9963",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 56,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.48",
+                "battery_level": "100.0",
+                "imu_error": "32.1573",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 57,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "11.61",
+                "battery_level": "100.0",
+                "imu_error": "33.0510",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 58,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.87",
+                "battery_level": "100.0",
+                "imu_error": "34.1508",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            },
+            {
+                "day": 59,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "9.15",
+                "battery_level": "100.0",
+                "imu_error": "35.3367",
+                "message": "VESZ\u00c9LY: Lopakod\u00f3 drift! Navig\u00e1ci\u00f3 pontatlan."
+            }
+        ]
+    },
+    "failure_day": 27
+}

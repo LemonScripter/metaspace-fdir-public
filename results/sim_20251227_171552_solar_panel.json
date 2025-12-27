@@ -1,0 +1,1214 @@
+{
+    "simulation_id": "sim_20251227_171552",
+    "scenario": "solar_panel",
+    "timestamp": "2025-12-27T17:15:52.372229",
+    "metaspace": {
+        "timeline": [
+            {
+                "day": 0,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "9.45",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 1,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.24",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 2,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "13.70",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 3,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "7.29",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 4,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.45",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 5,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "7.41",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 6,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "10.48",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 7,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.26",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 8,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.75",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 9,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.24",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 10,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.15",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 11,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "2.56",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 12,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "3.69",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 13,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.94",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 14,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.41",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 15,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "7.42",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 16,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.84",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 17,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.41",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 18,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.16",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 19,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "13.70",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 20,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.11",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 21,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "13.94",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 22,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.51",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 23,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.37",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 24,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "10.85",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 25,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "3.22",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 26,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.50",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 27,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "2.14",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 28,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.49",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 29,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.98",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 30,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.52",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 31,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.48",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 32,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "9.01",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 33,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.28",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 34,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.99",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 35,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "10.10",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 36,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "7.49",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 37,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "2.42",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 38,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.03",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 39,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.01",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 40,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "12.57",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 41,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.93",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 42,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "10.64",
+                "battery_level": "70.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 43,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.94",
+                "battery_level": "40.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (MetaSpace)."
+            },
+            {
+                "day": 44,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "4.25",
+                "battery_level": "10.0",
+                "imu_error": "0.0000",
+                "message": "KRITIKUS: Energiahi\u00e1ny! Payload lekapcsolva a 'Dead Bus' elker\u00fcl\u00e9se \u00e9rdek\u00e9ben."
+            },
+            {
+                "day": 45,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "10.74",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "KRITIKUS: Energiahi\u00e1ny! Payload lekapcsolva a 'Dead Bus' elker\u00fcl\u00e9se \u00e9rdek\u00e9ben."
+            },
+            {
+                "day": 46,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "11.64",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "KRITIKUS: Energiahi\u00e1ny! Payload lekapcsolva a 'Dead Bus' elker\u00fcl\u00e9se \u00e9rdek\u00e9ben."
+            },
+            {
+                "day": 47,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "4.41",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "KRITIKUS: Energiahi\u00e1ny! Payload lekapcsolva a 'Dead Bus' elker\u00fcl\u00e9se \u00e9rdek\u00e9ben."
+            },
+            {
+                "day": 48,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "5.00",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "KRITIKUS: Energiahi\u00e1ny! Payload lekapcsolva a 'Dead Bus' elker\u00fcl\u00e9se \u00e9rdek\u00e9ben."
+            },
+            {
+                "day": 49,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "8.30",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "KRITIKUS: Energiahi\u00e1ny! Payload lekapcsolva a 'Dead Bus' elker\u00fcl\u00e9se \u00e9rdek\u00e9ben."
+            },
+            {
+                "day": 50,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "4.87",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "KRITIKUS: Energiahi\u00e1ny! Payload lekapcsolva a 'Dead Bus' elker\u00fcl\u00e9se \u00e9rdek\u00e9ben."
+            },
+            {
+                "day": 51,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "6.49",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "KRITIKUS: Energiahi\u00e1ny! Payload lekapcsolva a 'Dead Bus' elker\u00fcl\u00e9se \u00e9rdek\u00e9ben."
+            },
+            {
+                "day": 52,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "7.54",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "KRITIKUS: Energiahi\u00e1ny! Payload lekapcsolva a 'Dead Bus' elker\u00fcl\u00e9se \u00e9rdek\u00e9ben."
+            },
+            {
+                "day": 53,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "7.49",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "KRITIKUS: Energiahi\u00e1ny! Payload lekapcsolva a 'Dead Bus' elker\u00fcl\u00e9se \u00e9rdek\u00e9ben."
+            },
+            {
+                "day": 54,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "6.04",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "KRITIKUS: Energiahi\u00e1ny! Payload lekapcsolva a 'Dead Bus' elker\u00fcl\u00e9se \u00e9rdek\u00e9ben."
+            },
+            {
+                "day": 55,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "7.64",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "KRITIKUS: Energiahi\u00e1ny! Payload lekapcsolva a 'Dead Bus' elker\u00fcl\u00e9se \u00e9rdek\u00e9ben."
+            },
+            {
+                "day": 56,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "9.00",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "KRITIKUS: Energiahi\u00e1ny! Payload lekapcsolva a 'Dead Bus' elker\u00fcl\u00e9se \u00e9rdek\u00e9ben."
+            },
+            {
+                "day": 57,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "3.80",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "KRITIKUS: Energiahi\u00e1ny! Payload lekapcsolva a 'Dead Bus' elker\u00fcl\u00e9se \u00e9rdek\u00e9ben."
+            },
+            {
+                "day": 58,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "5.80",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "KRITIKUS: Energiahi\u00e1ny! Payload lekapcsolva a 'Dead Bus' elker\u00fcl\u00e9se \u00e9rdek\u00e9ben."
+            },
+            {
+                "day": 59,
+                "feasibility": 0,
+                "mode": "SAFE_MODE",
+                "latency_ms": "50.00",
+                "gps_error": "11.38",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "KRITIKUS: Energiahi\u00e1ny! Payload lekapcsolva a 'Dead Bus' elker\u00fcl\u00e9se \u00e9rdek\u00e9ben."
+            }
+        ]
+    },
+    "ekf": {
+        "timeline": [
+            {
+                "day": 0,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.82",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 1,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.53",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 2,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.49",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 3,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "7.79",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 4,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.47",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 5,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "12.87",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 6,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.11",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 7,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "13.42",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 8,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "2.29",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 9,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "3.91",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 10,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "9.70",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 11,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "14.57",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 12,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.11",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 13,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.78",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 14,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "10.04",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 15,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.73",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 16,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "2.75",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 17,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "13.46",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 18,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.81",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 19,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.77",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 20,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "9.39",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 21,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.74",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 22,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.94",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 23,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.21",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 24,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "10.25",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 25,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "3.70",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 26,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "3.73",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 27,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "1.97",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 28,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.85",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 29,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "9.85",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 30,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.34",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 31,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.23",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 32,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.76",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 33,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "7.07",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 34,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.78",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 35,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.71",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 36,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "2.31",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 37,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "10.41",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 38,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "7.14",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 39,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.18",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 40,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.12",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 41,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "3.36",
+                "battery_level": "100.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 42,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.29",
+                "battery_level": "70.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 43,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.37",
+                "battery_level": "40.0",
+                "imu_error": "0.0000",
+                "message": "Nomin\u00e1lis m\u0171k\u00f6d\u00e9s (EKF)."
+            },
+            {
+                "day": 44,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.68",
+                "battery_level": "10.0",
+                "imu_error": "0.0000",
+                "message": "VESZ\u00c9LY: Kritikus akku! Az EKF nem l\u00e1tja, a m\u0171hold elveszhet."
+            },
+            {
+                "day": 45,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.01",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "VESZ\u00c9LY: Kritikus akku! Az EKF nem l\u00e1tja, a m\u0171hold elveszhet."
+            },
+            {
+                "day": 46,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.45",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "VESZ\u00c9LY: Kritikus akku! Az EKF nem l\u00e1tja, a m\u0171hold elveszhet."
+            },
+            {
+                "day": 47,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.38",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "VESZ\u00c9LY: Kritikus akku! Az EKF nem l\u00e1tja, a m\u0171hold elveszhet."
+            },
+            {
+                "day": 48,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "2.83",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "VESZ\u00c9LY: Kritikus akku! Az EKF nem l\u00e1tja, a m\u0171hold elveszhet."
+            },
+            {
+                "day": 49,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "8.28",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "VESZ\u00c9LY: Kritikus akku! Az EKF nem l\u00e1tja, a m\u0171hold elveszhet."
+            },
+            {
+                "day": 50,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.60",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "VESZ\u00c9LY: Kritikus akku! Az EKF nem l\u00e1tja, a m\u0171hold elveszhet."
+            },
+            {
+                "day": 51,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.18",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "VESZ\u00c9LY: Kritikus akku! Az EKF nem l\u00e1tja, a m\u0171hold elveszhet."
+            },
+            {
+                "day": 52,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "15.38",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "VESZ\u00c9LY: Kritikus akku! Az EKF nem l\u00e1tja, a m\u0171hold elveszhet."
+            },
+            {
+                "day": 53,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "4.80",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "VESZ\u00c9LY: Kritikus akku! Az EKF nem l\u00e1tja, a m\u0171hold elveszhet."
+            },
+            {
+                "day": 54,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "5.87",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "VESZ\u00c9LY: Kritikus akku! Az EKF nem l\u00e1tja, a m\u0171hold elveszhet."
+            },
+            {
+                "day": 55,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "11.28",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "VESZ\u00c9LY: Kritikus akku! Az EKF nem l\u00e1tja, a m\u0171hold elveszhet."
+            },
+            {
+                "day": 56,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "10.75",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "VESZ\u00c9LY: Kritikus akku! Az EKF nem l\u00e1tja, a m\u0171hold elveszhet."
+            },
+            {
+                "day": 57,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "6.00",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "VESZ\u00c9LY: Kritikus akku! Az EKF nem l\u00e1tja, a m\u0171hold elveszhet."
+            },
+            {
+                "day": 58,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "13.42",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "VESZ\u00c9LY: Kritikus akku! Az EKF nem l\u00e1tja, a m\u0171hold elveszhet."
+            },
+            {
+                "day": 59,
+                "feasibility": 100,
+                "mode": "FULL_MISSION",
+                "latency_ms": "0.00",
+                "gps_error": "2.76",
+                "battery_level": "0.0",
+                "imu_error": "0.0000",
+                "message": "VESZ\u00c9LY: Kritikus akku! Az EKF nem l\u00e1tja, a m\u0171hold elveszhet."
+            }
+        ]
+    },
+    "failure_day": 42
+}

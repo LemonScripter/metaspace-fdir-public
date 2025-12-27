@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>MetaSpace | Mission Assurance Simulator</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container { position: relative; height: 300px; width: 100%; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1>MetaSpace<span style="font-size:0.5em">.bio</span></h1>
+            <small>Deterministic Mission Assurance Simulator</small>
+        </div>
+        <div class="system-status">
+            <span class="status-indicator online"></span> CORE V1.4: ONLINE
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h2>1. Szimulációs konfiguráció</h2>
+            <p style="font-size:12px; color:#aaa; margin-bottom: 15px;">
+                Válassz forgatókönyvet. A hiba időpontja minden futtatásnál <strong>véletlenszerű</strong>.
+            </p>
+            
+            <label>Forgatókönyv (Scenario)</label>
+            <select id="scenario-select">
+                <option value="gps_antenna">GPS antenna hiba (Jelvesztés)</option>
+                <option value="battery_failure">Akkumulátor összeomlás (Zárlat)</option>
+                <option value="solar_panel">Napelem törés (Lassú lemerülés)</option>
+                <option value="imu_drift">IMU szenzor drift (Sodródás)</option>
+                <option value="nominal">Nominális (Nincs hiba)</option>
+            </select>
+
+            <label>Időtartam (Nap)</label>
+            <input type="number" id="duration-input" value="60" min="20" max="365">
+
+            <button id="sim-btn" onclick="runSimulation()">Összehasonlítás indítása</button>
+
+            <div style="margin-top: 30px; border-top: 1px solid #444; padding-top:20px;">
+                <h2>3. Élő státusz</h2>
+                <div class="metric-box">
+                    <div style="font-size:12px; color:#aaa">RENDSZER ÁLLAPOT</div>
+                    <div id="live-status" class="metric-val" style="color:#2ecc71">VÁRAKOZÁS</div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-panel">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <div><h2>2. Megbízhatósági görbe (Mission Feasibility)</h2></div>
+                    <div style="font-size:12px; color:#aaa; text-align:right;">
+                        <span style="color:#e74c3c; font-weight:bold;">--- Hagyományos EKF</span> &nbsp;|&nbsp; 
+                        <span style="color:#66fcf1; font-weight:bold;">── MetaSpace.bio</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="feasibilityChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card" style="border: 1px solid #66fcf1; background: #0f1820; min-height: 100px;">
+                <h2 style="color:#fff; border-bottom: 1px solid #333; padding-bottom:5px; margin-top:0;">Mi történik éppen? (Élő elemzés)</h2>
+                <div id="narrative-box" style="font-size: 15px; line-height: 1.6; color: #ddd;">
+                    Indítsd el a szimulációt a részletes elemzéshez...
+                </div>
+            </div>
+
+            <div class="card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <h2>4. Végső elemzés és ROI</h2>
+                    <div id="final-report" style="font-size:13px; color:#ccc;">Várakozás az eredményekre...</div>
+                </div>
+                <div>
+                    <h2>Bio-Code Stream (Titkos mag)</h2>
+                    <div id="bio-stream" style="font-family: monospace; font-size: 11px;">>>> RENDSZER KÉSZ.</div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

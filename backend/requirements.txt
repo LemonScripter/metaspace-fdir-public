@@ -1,0 +1,19 @@
+# --- Core Framework ---
+Flask>=2.3.3
+Flask-CORS>=4.0.0
+Werkzeug>=2.3.6
+
+# --- Security (Secure Enclave) ---
+cryptography>=41.0.3
+
+# --- Simulation & Math ---
+# Python 3.12-höz újabb numpy/scipy kell!
+numpy>=1.26.0
+scipy>=1.11.3
+
+# --- Utilities ---
+python-dotenv>=1.0.0
+requests>=2.31.0
+
+# --- Development ---
+pytest>=7.4.0
