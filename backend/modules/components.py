@@ -44,18 +44,21 @@ class BioComponent:
         if fault_code not in self.faults:
             self.faults.append(fault_code)
             self.health -= 15.0 # Jelentős sérülés
-            # print(f"[{self.name}] \033[93mFAULT DETECTED: {fault_code} (Health: {self.health}%)\033[0m")
 
     def shutdown(self, reason):
         if self.is_active:
             self.is_active = False
             self.health = 0
-            # print(f"[{self.name}] \033[91mSHUTDOWN: {reason} (SILENT DROP ACTIVATED)\033[0m")
+            # Debug célból, ha látni akarod a konzolon:
+            # print(f"[{self.name}] SHUTDOWN: {reason} (SILENT DROP ACTIVATED)")
 
     def force_fail(self, failure_type):
         """Külső hiba injektálása (pl. a szimulátorból)"""
         self.register_fault(failure_type)
-        if "physics" in failure_type or "break" in failure_type:
+        
+        # --- JAVÍTÁS: .lower() használata a biztos találatért ---
+        ft_lower = failure_type.lower()
+        if "physics" in ft_lower or "break" in ft_lower or "fire" in ft_lower:
              self.shutdown(failure_type)
 
 class SolarPanel(BioComponent):
@@ -67,7 +70,8 @@ class SolarPanel(BioComponent):
     def get_power_output(self, sun_intensity):
         if not self.self_diagnose(): return 0.0
         # P = Intenzitás * Terület * Hatásfok
-        return max(0, sun_intensity * self.area * self.efficiency * 1000) # Watt
+        # 1000 W/m2 a napállandó földközelben (felszínen, űrben 1361, de egyszerűsítünk)
+        return max(0, sun_intensity * self.area * self.efficiency * 1000) 
 
 class BatteryCell(BioComponent):
     def __init__(self, name, capacity_wh):
