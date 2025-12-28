@@ -1,0 +1,191 @@
+{
+  "validation_id": "1667165a71eb6c2ae38c50c6d2f0e7d34f992e690340870e831d654d36b2e8d9",
+  "timestamp": "2025-12-29T00:39:44.641098",
+  "mission_state": {
+    "biocode_level3": "0x000000640000013C",
+    "biocode_level2": {
+      "payload": "0x01641064",
+      "power": "0x02641064",
+      "navigation": "0x03641064",
+      "comm": "0x04641064"
+    },
+    "biocode_level1": {
+      "OLI2": "0x00010FFFFFFFFFFF",
+      "TIRS2": "0x0002400000000000",
+      "ST_A": "0x00030FFFFFFFFFFF",
+      "ST_B": "0x00040FFFFFFFFFFF",
+      "EPS": "0x00050FFFFFFFFFFF",
+      "OBC": "0x00060FFFFFFFFFFF",
+      "X_BAND": "0x00070FFFFFFFFFFF",
+      "S_BAND": "0x00080FFFFFFFFFFF"
+    },
+    "feasibility": 100.0,
+    "feasibility_explanation": "Bio-kod vezert szamitas (Level 2 -> Level 3): payload(35%)*100.0% + power(30%)*100.0% + navigation(20%)*100.0% + comm(15%)*100.0% = 100.00%",
+    "action": "CONTINUE_NOMINAL",
+    "safety_margin": 60,
+    "active_nodes_count": 7,
+    "total_nodes_count": 8,
+    "biocode_generated": true
+  },
+  "invariants": {
+    "health_bounds": {
+      "description": "∀n: 0 ≤ n.health ≤ 100",
+      "passed_count": 1,
+      "failed_count": 0,
+      "last_status": true,
+      "last_details": "Minden node health-je 0-100 kozott van (OK)"
+    },
+    "master_uniqueness": {
+      "description": "|{n: n.is_master}| ≤ 1",
+      "passed_count": 1,
+      "failed_count": 0,
+      "last_status": true,
+      "last_details": "Master uniqueness OK: 1 master node (OK)"
+    },
+    "power_dependency": {
+      "description": "regen_active → ∃n: 'power' ∈ n.capabilities",
+      "passed_count": 1,
+      "failed_count": 0,
+      "last_status": true,
+      "last_details": "Regen nem aktív, nincs ellenőrzés szükséges"
+    },
+    "feasibility_bounds": {
+      "description": "0 ≤ feasibility ≤ 100",
+      "passed_count": 1,
+      "failed_count": 0,
+      "last_status": true,
+      "last_details": "Feasibility bounds OK: 100.00%"
+    },
+    "regen_monotonicity": {
+      "description": "regen → health_new ≥ health_old",
+      "passed_count": 1,
+      "failed_count": 0,
+      "last_status": true,
+      "last_details": "Nem regen művelet, nincs ellenőrzés szükséges"
+    },
+    "biocode_consistency": {
+      "description": "decode(encode(state)) == state",
+      "passed_count": 1,
+      "failed_count": 0,
+      "last_status": true,
+      "last_details": "Bio-code not generated (not required for validation)"
+    },
+    "biocode_encrypted_validation": {
+      "description": "Bio-code validation according to encrypted files",
+      "passed_count": 1,
+      "failed_count": 0,
+      "last_status": true,
+      "last_details": "Bio-code not generated (not required for validation)"
+    }
+  },
+  "mathematics": {
+    "feasibility_formula": {
+      "valid_count": 1,
+      "invalid_count": 0,
+      "last_valid": true,
+      "last_proof": "Feasibility = 100.00%, 0 ≤ 100.00 ≤ 100 ✓"
+    }
+  },
+  "operations_log": [
+    {
+      "operation": "chaos_injection",
+      "timestamp": "2025-12-29T00:39:44.629098",
+      "validated": true,
+      "feasibility": 100.0,
+      "node_states": [
+        {
+          "id": "OLI2",
+          "name": "OLI-2",
+          "health": 100.0,
+          "is_master": false,
+          "capabilities": [
+            "payload"
+          ],
+          "status": "OPERATIONAL"
+        },
+        {
+          "id": "TIRS2",
+          "name": "TIRS-2",
+          "health": 0.0,
+          "is_master": false,
+          "capabilities": [
+            "payload"
+          ],
+          "status": "DEAD"
+        },
+        {
+          "id": "ST_A",
+          "name": "Star Tracker A",
+          "health": 100.0,
+          "is_master": false,
+          "capabilities": [
+            "navigation"
+          ],
+          "status": "OPERATIONAL"
+        },
+        {
+          "id": "ST_B",
+          "name": "Star Tracker B",
+          "health": 100.0,
+          "is_master": false,
+          "capabilities": [
+            "navigation"
+          ],
+          "status": "OPERATIONAL"
+        },
+        {
+          "id": "EPS",
+          "name": "EPS",
+          "health": 100.0,
+          "is_master": false,
+          "capabilities": [
+            "power"
+          ],
+          "status": "OPERATIONAL"
+        },
+        {
+          "id": "OBC",
+          "name": "OBC",
+          "health": 100.0,
+          "is_master": true,
+          "capabilities": [
+            "payload",
+            "navigation"
+          ],
+          "status": "OPERATIONAL"
+        },
+        {
+          "id": "X_BAND",
+          "name": "X-band Transponder",
+          "health": 100.0,
+          "is_master": false,
+          "capabilities": [
+            "comm"
+          ],
+          "status": "OPERATIONAL"
+        },
+        {
+          "id": "S_BAND",
+          "name": "S-band Transponder",
+          "health": 100.0,
+          "is_master": false,
+          "capabilities": [
+            "comm"
+          ],
+          "status": "OPERATIONAL"
+        }
+      ],
+      "validation_status": "PASSED",
+      "biocode_level3": "0x000000640000013C",
+      "errors": []
+    }
+  ],
+  "overall_status": "PASSED",
+  "overall_status_explanation": "PASSED: Minden 1 művelet sikeres (100% success rate). A rendszer 100% matematikai validációval működik.",
+  "summary": {
+    "total_operations": 1,
+    "passed_operations": 1,
+    "failed_operations": 0,
+    "success_rate": 100.0
+  }
+}
