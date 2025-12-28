@@ -38,6 +38,8 @@ class MetaSpaceSimulator:
         self._adapt_execution()
         
         # 4. Adatgyűjtés szimulálása a döntés alapján
+        # MetaSpace: Gyorsan reagál, leállítja az adatgyűjtést, ha hiba van
+        # Ezzel szemben az EKF tovább gyűjt rossz adatot (fölösleges/költséges fotók)
         if self.execution_mode == 'FULL_MISSION':
             self.scenes_today = 700
             self.data_loss_today = 0
@@ -47,6 +49,7 @@ class MetaSpaceSimulator:
             self.data_loss_today = 700 - self.scenes_today
         else:
             # SAFE_MODE vagy EMERGENCY -> Nincs adatgyűjtés (Védelem)
+            # MetaSpace: Leállítja az adatgyűjtést, ha hiba van (nem gyűjt fölösleges fotókat)
             self.scenes_today = 0
             self.data_loss_today = 0 # Nem "veszteség", hanem "megmentett selejt"
             
@@ -56,10 +59,20 @@ class MetaSpaceSimulator:
         Itt kötjük össze a fizikai modellt (landsat9) a MetaSpace logikával.
         """
         # --- AKKUMULÁTOR ELLENŐRZÉS (Energy Invariant) ---
+        # REÁLIS: A MetaSpace azonnal észleli az energia invariáns megsértését
+        # - Akku < 20%: Kritikus (FAULT)
+        # - Akku < 40%: Degradált (DEGRADED)
+        # - Power generation < 50%: Solar panel hiba (FAULT vagy DEGRADED)
         if self.landsat9.battery_level < 20.0:
             self.health['power'] = 0 # FAULT (Kritikus)
         elif self.landsat9.battery_level < 40.0:
             self.health['power'] = 1 # DEGRADED
+        elif hasattr(self.landsat9, 'power_generation_w') and self.landsat9.power_generation_w <= 1200.0:
+            # Solar panel hiba: power generation <= 50% (normál: ~2400W, hiba esetén: <=1200W)
+            # A MetaSpace azonnal észleli az energia invariáns megsértését
+            # KRITIKUS: A solar panel hiba azonnal FAULT-ot jelent, mert nem tudja visszatölteni az akkut
+            # Ez hosszú távon Dead Bus állapotot okozhat
+            self.health['power'] = 0 # FAULT (Kritikus - Solar panel hiba)
         else:
             self.health['power'] = 2 # NOMINAL
 

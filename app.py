@@ -62,7 +62,7 @@ def v3_regen_api():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 # --- V2 SIMULATOR API ---
-@app.route('/api/simulate', methods=['POST'])
+@app.route('/api/simulation', methods=['POST'])
 def run_simulation():
     if not simulator:
         return jsonify({"status": "error", "message": "Simulator core offline."}), 500

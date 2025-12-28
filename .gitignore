@@ -11,6 +11,7 @@ env/
 raw_secrets/
 results/
 docs/
+test/
 
 # 2. A mesterkulcs (EZ A LEGFONTOSABB!)
 *.key

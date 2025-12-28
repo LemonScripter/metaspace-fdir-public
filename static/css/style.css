@@ -213,6 +213,9 @@ header {
 .telemetry-bay {
     grid-column: 3 / 4;
     grid-row: 1 / 3; /* Végigfut a jobb oldalon */
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 /* --- FORM CONTROLS --- */
@@ -327,12 +330,13 @@ select:focus, input:focus {
 
 /* --- TELEMETRY GRID --- */
 #component-grid {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 1fr; /* Minden sor egyforma magas */
     gap: 12px;
-    max-height: 800px;
-    overflow-y: auto;
-    padding-right: 5px;
+    height: 100%;
+    flex: 1;
+    min-height: 0;
 }
 
 /* JS által generált elemek override-ja */
@@ -340,17 +344,24 @@ select:focus, input:focus {
     background: rgba(0, 10, 20, 0.6) !important;
     border: 1px solid rgba(255, 255, 255, 0.05) !important;
     border-left-width: 4px !important;
+    padding: 18px !important;
+    display: flex !important;
+    flex-direction: column !important;
     transition: all 0.3s;
+    min-height: 0;
+    overflow: hidden;
+    height: 100%; /* Minden téglalap egyforma magas */
 }
 #component-grid > div:hover {
     background: rgba(0, 20, 40, 0.8) !important;
-    transform: translateX(5px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 243, 255, 0.2);
 }
 
 /* --- LOGS & TERMINAL --- */
 #narrative-box {
-    font-size: 14px;
-    line-height: 1.6;
+    font-size: 18px; /* Nagyobb betűtípus */
+    line-height: 1.8; /* Jobb olvashatóság */
     color: #ccc;
     height: 200px;
     overflow-y: auto;
@@ -366,7 +377,7 @@ select:focus, input:focus {
     border: 1px solid #222;
     padding: 10px;
     height: 200px;
-    overflow-y: hidden; /* JS scroll */
+    overflow-y: auto; /* Görgethető */
     box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
 }
 
@@ -441,16 +452,17 @@ select:focus, input:focus {
     .telemetry-bay { 
         grid-column: 1 / 3; 
         grid-row: 3 / 4; 
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        max-height: none;
-        overflow: visible;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
     }
     
     #component-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        overflow: visible;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        height: auto;
+        min-height: 400px;
     }
 }
 

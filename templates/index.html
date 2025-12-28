@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MetaSpace | Mission Control</title>
     <link rel="stylesheet" href="/static/css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -73,7 +73,7 @@
 
         <section class="panel logs-console">
             <div style="border-right: 1px solid rgba(255,255,255,0.1); padding-right:15px;">
-                <div class="panel-title">Tactical Analysis</div>
+                <div class="panel-title">Analysis</div>
                 <div id="narrative-box">
                     <span style="color:#555;">> System initialized.</span><br>
                     <span style="color:#555;">> Loaded kinematic model: Landsat-9 (NASA)</span><br>
@@ -82,7 +82,7 @@
             </div>
             <div>
                 <div class="panel-title">Invariant Verification Stream</div>
-                <div id="bio-stream" style="height:150px; overflow:hidden;">
+                <div id="bio-stream" style="height:150px; overflow-y:auto;">
                     <div class="log-entry">[T-0] Z3 Solver Loaded.</div>
                 </div>
             </div>
@@ -136,6 +136,7 @@
     </div>
 
     <script src="/static/js/main.js"></script>
+    <script src="/static/js/interpretation.js"></script>
     <script>
         function closeModalAndRun() {
             document.getElementById('intro-modal').style.display='none';

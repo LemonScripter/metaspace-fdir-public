@@ -1,6 +1,7 @@
 /**
  * MetaSpace Research Edition - Frontend Controller
  * Verzió: 1.4.5 (Enhanced Log with Fault Detection)
+ *
  */
 
 let chartInstance = null;
@@ -10,12 +11,16 @@ let logLineCount = 0;
 document.addEventListener('DOMContentLoaded', function() {
     console.log("[System] MetaSpace Frontend Initialized.");
     const liveStatus = document.getElementById('live-status');
+    
     if(liveStatus) {
         liveStatus.innerText = "STANDBY";
         liveStatus.style.color = "#aaa";
     }
 });
 
+/**
+ * Executes the simulation by fetching data from the Python backend.
+ */
 function runSimulation() {
     const scenarioSelect = document.getElementById('scenario-select');
     const durationInput = document.getElementById('duration-input');
@@ -29,265 +34,338 @@ function runSimulation() {
     const scenario = scenarioSelect.value;
     const duration = parseInt(durationInput.value);
 
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Computing Physics Model...';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Computing Physics Model...';
+    }
     
-    liveStatus.innerText = "SOLVER RUNNING...";
-    liveStatus.style.color = "#f1c40f"; 
+    if (liveStatus) {
+        liveStatus.innerText = "SOLVER RUNNING...";
+        liveStatus.style.color = "#f1c40f"; 
+    }
     
-    if(placeholder) placeholder.style.display = 'none';
-    if(canvas) canvas.style.display = 'block';
+    if(placeholder) {
+        console.log("[runSimulation] Hiding placeholder");
+        placeholder.style.display = 'none';
+    }
+    if(canvas) {
+        console.log("[runSimulation] Showing canvas");
+        canvas.style.display = 'block';
+        console.log("[runSimulation] Canvas dimensions:", canvas.width, "x", canvas.height);
+    } else {
+        console.error("[runSimulation] Canvas element not found!");
+    }
 
-    startDataStream();
-
-    fetch('/api/simulate', {
+    fetch('/api/simulation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ scenario: scenario, duration: duration })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) throw new Error('Server returned ' + response.status);
+        return response.json();
+    })
     .then(data => {
         if (data.status === 'success') {
-            renderResearchChart(data.data, scenario);
-            updateTechnicalNarrative(data.data, scenario);
+            console.log("[Telemetry] Data received. Forcing extraction...");
+            console.log("[Debug] Full response structure:", Object.keys(data));
+            console.log("[Debug] data.data type:", typeof data.data);
+            console.log("[Debug] data.data keys:", data.data ? Object.keys(data.data) : "N/A");
             
-            if (data.data.final_status && data.data.final_status.components) {
-                renderComponentGrid(data.data.final_status.components);
+            // FIX: Brutális mélységi keresés a többszörösen becsomagolt JSON-ben
+            const payload = data.data && data.data.telemetry_log ? data.data : (data.data && data.data.data ? data.data.data : (data.data || data));
+            const log = payload.telemetry_log || [];
+
+            console.log("[Debug] Payload type:", typeof payload);
+            console.log("[Debug] Payload keys:", payload ? Object.keys(payload) : "N/A");
+            console.log("[Debug] Telemetry log length:", log.length);
+
+            if (log.length > 0) {
+                console.log("[Debug] First log entry keys:", Object.keys(log[0]));
+                console.log("[Debug] First entry ekf_reliability:", log[0].ekf_reliability);
+                console.log("[Debug] First entry metaspace_integrity:", log[0].metaspace_integrity);
+                
+                const results = {
+                    time: log.map(p => (p.time || 0) / 1440), // Átváltás napra (1440 perc = 1 nap)
+                    ekf: log.map(p => p.ekf_reliability !== undefined ? p.ekf_reliability : 100),
+                    metaspace: log.map(p => p.metaspace_integrity !== undefined ? p.metaspace_integrity : 100),
+                    battery: log.map(p => p.battery_percent !== undefined ? p.battery_percent : 100),
+                    failure_type: payload.failure_type || scenario,
+                    failure_time: payload.failure_time ? payload.failure_time / 1440 : null // Átváltás napra
+                };
+                
+                console.log("[Debug] Results object:", {
+                    timeLength: results.time.length,
+                    ekfLength: results.ekf.length,
+                    metaspaceLength: results.metaspace.length,
+                    ekfFirst5: results.ekf.slice(0, 5),
+                    metaspaceFirst5: results.metaspace.slice(0, 5),
+                    ekfUnique: [...new Set(results.ekf)],
+                    metaspaceUnique: [...new Set(results.metaspace)]
+                });
+                
+                console.log("[Debug] Calling renderChart...");
+                renderChart(results, scenario); 
+                console.log("[Debug] renderChart called successfully");
+                
+                // Eredmények értelmezése és megjelenítése
+                interpretResults(results, scenario, payload);
+            } else {
+                console.error("Critical: Telemetry log not found in response.");
             }
             
-            liveStatus.innerText = "VERIFIED (SAFE)";
-            liveStatus.style.color = "#2ecc71";
+            updateComponentGrid(payload.components || []);
+            // A narrative-t nem írjuk felül, mert az interpretation.js már írja az Analysis dobozba
+            // generateNarrative(payload.narrative || "Complete", payload.bio_logs || []);
+            
+            // Csak a bio-stream-et frissítjük
+            const streamBox = document.getElementById('bio-stream');
+            if (streamBox && Array.isArray(payload.bio_logs)) {
+                streamBox.innerHTML = '';
+                payload.bio_logs.forEach((log, index) => {
+                    setTimeout(() => {
+                        const entry = document.createElement('div');
+                        entry.className = 'log-entry';
+                        entry.innerHTML = `<span class="log-timestamp">[T+${index}]</span> ${log}`;
+                        streamBox.appendChild(entry);
+                        streamBox.scrollTop = streamBox.scrollHeight;
+                    }, index * 40);
+                });
+            }
+        }
+    })
+    .catch(error => {
+        console.error('[System] Mapping Error:', error);
+        if (liveStatus) {
+            liveStatus.innerText = "ERROR";
+            liveStatus.style.color = "var(--alert-red)";
         }
     })
     .finally(() => {
-        btn.disabled = false;
-        btn.innerText = "Execute Simulation & Analysis";
-        stopDataStream();
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = 'EXECUTE SIMULATION';
+        }
     });
 }
 
-function renderResearchChart(results, scenario) {
-    const ctx = document.getElementById('feasibilityChart').getContext('2d');
-    if (chartInstance) chartInstance.destroy();
+/**
+ * Renders the Chart.js visualization with annotations and explanations.
+ */
+function renderChart(results, scenario) {
+    console.log("[renderChart] Called with results:", results);
+    const ctx = document.getElementById('feasibilityChart');
+    console.log("[renderChart] Canvas element:", ctx);
+    if (!ctx || !results || !results.time) {
+        console.error("[renderChart] Missing requirements:", {
+            ctx: !!ctx,
+            results: !!results,
+            time: results ? !!results.time : false
+        });
+        return;
+    }
 
-    const failDay = results.failure_day;
-    const totalDays = results.days;
-    const labels = Array.from({length: totalDays}, (_, i) => i + 1);
+    console.log("[renderChart] Canvas display style before:", ctx.style.display);
+    ctx.style.display = 'block';
+    console.log("[renderChart] Canvas display style after:", ctx.style.display);
+
+    if (chartInstance) {
+        console.log("[renderChart] Destroying previous chart instance");
+        chartInstance.destroy();
+    }
+
+    console.log("[renderChart] Creating new Chart instance...");
+    console.log("[renderChart] EKF data length:", results.ekf ? results.ekf.length : 0);
+    console.log("[renderChart] MetaSpace data length:", results.metaspace ? results.metaspace.length : 0);
+    console.log("[renderChart] Chart.js available:", typeof Chart !== 'undefined');
     
-    const isNominal = (scenario === 'nominal');
-
-    const traditionalData = labels.map(day => {
-        if (isNominal) return 97 + Math.random() * 3; 
-        if (day < failDay) {
-            return 97 + Math.random() * 3;
-        } else {
-            let falseConfidence = 95 - ((day - failDay) * 0.5); 
-            return Math.max(0, falseConfidence); 
-        }
-    });
-
-    const metaSpaceData = labels.map(day => {
-        if (isNominal) return 100; 
-        if (day < failDay) return 100;
-        return 0; 
-    });
-
-    chartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Stochastic EKF (Industry Std)',
-                    data: traditionalData,
-                    borderColor: '#e74c3c', 
-                    borderDash: [5, 5],     
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    tension: 0.4            
-                },
-                {
-                    label: 'MetaSpace Invariant Core',
-                    data: metaSpaceData,
-                    borderColor: '#66fcf1', 
-                    borderWidth: 3,
-                    pointRadius: 0,
-                    tension: 0.05,          
-                    fill: { target: 'origin', above: 'rgba(102, 252, 241, 0.1)' }
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { beginAtZero: true, max: 105, grid: { color: '#333' }, ticks: { color: '#888' } },
-                x: { grid: { color: '#333' }, ticks: { color: '#888' } }
+    try {
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: results.time,
+                datasets: [
+                    {
+                        label: 'EKF Reliability',
+                        data: results.ekf,
+                        borderColor: '#ff6b6b',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        borderDash: [5, 5],
+                        fill: false,
+                        pointRadius: 0,
+                        tension: 0.4,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'MetaSpace',
+                        data: results.metaspace,
+                        borderColor: '#00f3ff',
+                        backgroundColor: 'transparent',
+                        fill: false,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                        pointBackgroundColor: 'transparent',
+                        pointBorderColor: 'transparent',
+                        tension: 0.4,
+                        borderWidth: 2,
+                        stepped: false,
+                        spanGaps: false
+                    }
+                ]
             },
-            plugins: {
-                legend: { labels: { color: '#ccc' } },
-                tooltip: { backgroundColor: 'rgba(15, 24, 32, 0.9)', titleColor: '#66fcf1' }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                elements: {
+                    line: {
+                        tension: 0.4,
+                        fill: false
+                    },
+                    point: {
+                        radius: 0,
+                        hoverRadius: 0
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        max: 110, 
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#ccc' },
+                        title: {
+                            display: true,
+                            text: 'Reliability / Integrity (%)',
+                            color: '#ccc',
+                            font: { family: 'Rajdhani', size: 12 }
+                        }
+                    },
+                    x: { 
+                        grid: { display: false }, 
+                        ticks: { maxTicksLimit: 12, color: '#666' },
+                        title: {
+                            display: true,
+                            text: 'Time (days)',
+                            color: '#ccc',
+                            font: { family: 'Rajdhani', size: 12 }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { 
+                        display: true,
+                        labels: { 
+                            color: '#ccc', 
+                            font: { family: 'Rajdhani', size: 12 },
+                            usePointStyle: true,
+                            padding: 15
+                        },
+                        position: 'top'
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#00f3ff',
+                        bodyColor: '#fff',
+                        borderColor: '#00f3ff',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                            title: function(context) {
+                                return `Time: ${parseFloat(context[0].label).toFixed(2)} days`;
+                            },
+                            label: function(context) {
+                                const label = context.dataset.label || '';
+                                const value = context.parsed.y.toFixed(1);
+                                return `${label}: ${value}%`;
+                            },
+                            afterBody: function(context) {
+                                if (results.failure_time !== null && context[0].parsed.x >= results.failure_time) {
+                                    return '⚠ Failure Active';
+                                }
+                                return '';
+                            }
+                        }
+                    }
+                }
             }
-        }
+        });
+        console.log("[renderChart] Chart instance created successfully");
+        console.log("[renderChart] Chart data:", chartInstance.data);
+        console.log("[renderChart] Chart datasets:", chartInstance.data.datasets.map(d => ({
+            label: d.label,
+            dataLength: d.data.length,
+            first5: d.data.slice(0, 5)
+        })));
+    } catch (error) {
+        console.error("[renderChart] Error creating chart:", error);
+        throw error;
+    }
+}
+
+/**
+ * Updates the health matrix grid.
+ */
+function updateComponentGrid(components) {
+    const grid = document.getElementById('component-grid');
+    if (!grid || !Array.isArray(components)) return;
+    
+    grid.innerHTML = '';
+    components.forEach(comp => {
+        const card = document.createElement('div');
+        card.className = 'component-card';
+        const sColor = comp.status === 'HEALTHY' ? 'var(--success-green)' : 'var(--alert-red)';
+        const description = comp.description || 'Komponens részletei nem elérhetők.';
+        card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span style="font-size:13px; color:#666;">ID: ${comp.id}</span>
+                <span class="status-dot" style="background:${sColor}; width:10px; height:10px; border-radius:50%; box-shadow:0 0 8px ${sColor};"></span>
+            </div>
+            <div style="font-weight:bold; margin-bottom:10px; font-size:16px; color:#eee;">${comp.name}</div>
+            <div style="font-size:13px; text-transform:uppercase; color:${sColor}; margin-bottom:14px; font-weight:bold;">${comp.status}</div>
+            <div style="font-size:13px; color:#aaa; line-height:1.6; flex:1; overflow-y:auto;">${description}</div>
+        `;
+        grid.appendChild(card);
     });
 }
 
-function updateTechnicalNarrative(results, scenario) {
-    const box = document.getElementById('narrative-box');
-    let message = "";
-    const day = results.failure_day;
-    
-    if (scenario === 'solar_panel') {
-        message = `
-            <strong style="color:#e74c3c">[CRITICAL] INVARIANT VIOLATION DETECTED @ T+${day} days</strong><br>
-            <span style="color:#aaa">Violated Constraint:</span> <code>Energy_Budget (P_in >= P_out)</code><br>
-            <br>
-            <strong>Analysis:</strong> Sudden drop in Solar Array output inconsistent with orbital shadow model.<br>
-            <strong>MetaSpace Action:</strong> <span style="color:#66fcf1">ISOLATION TRIGGERED (t < 2ms)</span>. Faulty array disconnected. Safe Mode engaged.<br>
-            <strong>Comparison:</strong> Traditional filter failed to reject data for ${results.days - day} days.
-        `;
-    } else if (scenario === 'gps_antenna') {
-        message = `
-            <strong style="color:#e74c3c">[CRITICAL] KINEMATIC VIOLATION DETECTED @ T+${day} days</strong><br>
-            <span style="color:#aaa">Violated Constraint:</span> <code>Orbital_Velocity (Kepler Limit)</code><br>
-            <br>
-            <strong>Analysis:</strong> Position delta exceeds maximum physical velocity of satellite.<br>
-            <strong>MetaSpace Action:</strong> GPS Data marked INVALID. Switched to IMU propagation.<br>
-        `;
-    } else if (scenario === 'battery_failure') {
-        message = `
-            <strong style="color:#e74c3c">[CRITICAL] THERMAL RUNAWAY PREDICTED @ T+${day} days</strong><br>
-            <span style="color:#aaa">Violated Constraint:</span> <code>Temp_Gradient (dT/dt)</code><br>
-            <br>
-            <strong>Analysis:</strong> Battery Cell #4 temperature spike detected.<br>
-            <strong>MetaSpace Action:</strong> Cell bypassed immediately to prevent pack failure.<br>
-        `;
-    } else if (scenario === 'imu_drift') {
-        message = `
-            <strong style="color:#e74c3c">[WARNING] SENSOR CONSISTENCY CHECK FAILED @ T+${day} days</strong><br>
-            <span style="color:#aaa">Violated Constraint:</span> <code>Momentum_Conservation</code><br>
-            <br>
-            <strong>Analysis:</strong> Gyroscope output drifts without reaction wheel actuation.<br>
-            <strong>MetaSpace Action:</strong> Sensor excluded from GNC loop.<br>
-        `;
-    } else {
-        message = `
-            <strong style="color:#2ecc71">[NOMINAL] MISSION PROCEEDING</strong><br>
-            <br>
-            All physical invariants satisfied.<br>
-            Z3 Solver confirms system state is valid.<br>
-            Energy budget: Positive.<br>
-        `;
-    }
-    box.innerHTML = message;
-}
-
-function renderComponentGrid(components) {
-    const grid = document.getElementById('component-grid');
-    if (!grid) return;
-    grid.innerHTML = ""; 
-    for (const [name, data] of Object.entries(components)) {
-        let statusColor = "#2ecc71";
-        let statusText = "OK";
-        if (!data.active) {
-            statusColor = "#e74c3c";
-            statusText = "ISOLATED";
-        } else if (data.health < 90) {
-            statusColor = "#f1c40f";
-            statusText = "DEGRADED";
-        }
-        const box = document.createElement('div');
-        box.style.background = "rgba(11, 18, 25, 0.8)";
-        box.style.border = `1px solid ${statusColor}`;
-        box.style.borderRadius = "4px"; box.style.padding = "10px"; box.style.fontFamily = "monospace";
-        let details = `Health: ${Math.round(data.health)}%`;
-        if (data.temp) details += `<br>Temp: ${Math.round(data.temp)}°C`;
-        if (data.charge !== undefined) details += `<br>Chg: ${Math.round(data.charge)}Wh`;
-        box.innerHTML = `
-            <div style="font-size:11px; color:#888; margin-bottom:5px; text-transform:uppercase;">${name}</div>
-            <div style="font-size:14px; color:${statusColor}; font-weight:bold; margin-bottom:5px;">${statusText}</div>
-            <div style="font-size:10px; color:#666; line-height:1.4;">${details}</div>
-        `;
-        grid.appendChild(box);
-    }
-}
-
-function startDataStream() {
-    const streamBox = document.getElementById('bio-stream'); 
-    if (!streamBox) return;
-    const nominalMessages = [
-        "[CHECK] Energy_Invariant (P_sol - P_load > 0) -> VERIFIED",
-        "[CHECK] Momentum_Conservation (dL/dt = T_ext) -> VERIFIED",
-        "[SOLVER] Z3 Constraint Check: SATISFIABLE",
-        "[SENSOR] IMU_01: OK | IMU_02: OK | GPS: LOCKED",
-        "[MEMORY] ECC Check: 0 Errors found @ 0x8F4A",
-        "[THERMAL] Bus Temp: 24.5C (Nominal)",
-        "[ORBIT] Propagator Delta: < 0.001 m/s",
-        "[POWER] Shunt Regulator: ACTIVE",
-        "[GNC] Star Tracker Quaternions: VALID"
-    ];
-    streamBox.innerHTML = "";
-    logLineCount = 0;
-    simulationInterval = setInterval(() => {
-        const randomMsg = nominalMessages[Math.floor(Math.random() * nominalMessages.length)];
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString('en-US', { hour12: false }) + "." + Math.floor(now.getMilliseconds()/10);
-        const line = document.createElement('div');
-        line.className = 'log-entry';
-        line.innerHTML = `<span class="log-timestamp">[${timeStr}]</span> <span class="log-ok">${randomMsg}</span>`;
-        streamBox.appendChild(line);
-        streamBox.scrollTop = streamBox.scrollHeight;
-        logLineCount++;
-        if (logLineCount > 100) streamBox.removeChild(streamBox.firstChild);
-    }, 150); 
-}
-
-function stopDataStream() {
-    if (simulationInterval) clearInterval(simulationInterval);
+/**
+ * Generates narrative and bio-logs.
+ */
+function generateNarrative(text, logs) {
+    const navBox = document.getElementById('narrative-box');
     const streamBox = document.getElementById('bio-stream');
-    const scenario = document.getElementById('scenario-select').value;
     
-    if (streamBox) {
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString('en-US', { hour12: false }) + "." + Math.floor(now.getMilliseconds()/10);
-
-        if (scenario !== 'nominal') {
-            const errorLine = document.createElement('div');
-            errorLine.className = 'log-entry';
-            errorLine.innerHTML = `
-                <span class="log-timestamp">[${timeStr}]</span> 
-                <span style="color:#ff2a2a; font-weight:bold;">[CRITICAL] INVARIANT VIOLATION: Energy_Budget FAILURE</span>
-            `;
-            streamBox.appendChild(errorLine);
-
-            const isolationLine = document.createElement('div');
-            isolationLine.className = 'log-entry';
-            isolationLine.innerHTML = `
-                <span class="log-timestamp">[${timeStr}]</span> 
-                <span style="color:#00f3ff;">[ACTION] MetaSpace: ISOLATING FAULTY COMPONENT...</span>
-            `;
-            streamBox.appendChild(isolationLine);
-        }
-
-        const line = document.createElement('div');
-        line.className = 'log-entry';
-        line.innerHTML = `<span class="log-timestamp">[END]</span> <span style="color:#66fcf1; font-weight:bold;">SIMULATION COMPLETE. DATA READY.</span>`;
-        streamBox.appendChild(line);
-        streamBox.scrollTop = streamBox.scrollHeight;
+    if (navBox) navBox.innerHTML = `<span>></span> ${text}`;
+    
+    if (streamBox && Array.isArray(logs)) {
+        streamBox.innerHTML = '';
+        logs.forEach((log, index) => {
+            setTimeout(() => {
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.innerHTML = `<span class="log-timestamp">[T+${index}]</span> ${log}`;
+                streamBox.appendChild(entry);
+                streamBox.scrollTop = streamBox.scrollHeight;
+            }, index * 40);
+        });
     }
 }
 
 function closeModalAndRun() {
     const modal = document.getElementById('intro-modal');
     if (modal) modal.style.display = 'none';
-    const scenarioSelect = document.getElementById('scenario-select');
-    if (scenarioSelect) {
-        scenarioSelect.value = 'solar_panel';
-        runSimulation();
-    }
+    runSimulation();
 }
 
 window.onclick = function(event) {
     const modal = document.getElementById('intro-modal');
     if (event.target == modal) modal.style.display = "none";
-}
+};
+
+// End of Controller Stack
+console.log("[System] Controller Verified.");
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */

@@ -54,9 +54,17 @@ class Landsat9Model:
         is_sun = self.calculate_orbit_position(self.time_elapsed)
         sun_intensity = 1.0 if is_sun else 0.0
 
-        # JAVÍTÁS: Csak akkor injektálunk hibát, ha nem NOMINAL a kérés
+        # JAVÍTÁS: Csak akkor injektálunk hibát, ha nem NOMINAL a kérés ÉS még nem történt meg
+        # A hiba csak egyszer következik be, de tartósan aktív marad
         if current_failure and current_failure != 'nominal':
-            self.inject_failure(current_failure)
+            # Ellenőrizzük, hogy már bekövetkezett-e ez a hiba
+            if not hasattr(self, '_injected_failures'):
+                self._injected_failures = set()
+            
+            if current_failure not in self._injected_failures:
+                # Első alkalommal injektáljuk a hibát
+                self.inject_failure(current_failure)
+                self._injected_failures.add(current_failure)
 
         # EPS ALRENDSZER FRISSÍTÉSE
         dt_hours = dt_minutes / 60.0
