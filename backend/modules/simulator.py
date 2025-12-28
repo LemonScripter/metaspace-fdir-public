@@ -338,8 +338,23 @@ class SimulationEngine:
             'narrative': f"Analysis Complete. MetaSpace Mode: {metaspace_solver.execution_mode}",
             'failure_type': selected_failure if selected_failure else scenario,
             'failure_time': failure_minute_start if selected_failure else None,
-            'bio_logs': bio_logs
+            'bio_logs': bio_logs,
+            'timestamp': datetime.now().isoformat(),
+            'scenario': scenario,
+            'duration': duration
         }
+
+        # Mentés fájlba a results könyvtárba
+        try:
+            result_file = os.path.join(self.results_dir, f"sim_{sim_id}.json")
+            with open(result_file, 'w', encoding='utf-8') as f:
+                json.dump(result_package, f, indent=2, ensure_ascii=False)
+            print(f"[SIMULATOR] Results saved to: {result_file}")
+            
+            # Régi fájlok törlése (max 30 fájl megtartása)
+            self._cleanup_old_results(max_files=30)
+        except Exception as e:
+            print(f"[SIMULATOR] Warning: Could not save results to file: {e}")
 
         self.results_cache[sim_id] = result_package
         return sim_id
@@ -385,3 +400,33 @@ class SimulationEngine:
 
     def get_results(self, sim_id):
         return self.results_cache.get(sim_id)
+    
+    def _cleanup_old_results(self, max_files=30):
+        """Törli a legrégebbi fájlokat, ha több mint max_files van a results könyvtárban."""
+        try:
+            # Összes JSON fájl listázása
+            json_files = []
+            for filename in os.listdir(self.results_dir):
+                if filename.startswith('sim_') and filename.endswith('.json'):
+                    filepath = os.path.join(self.results_dir, filename)
+                    # Fájl módosítási ideje
+                    mtime = os.path.getmtime(filepath)
+                    json_files.append((mtime, filepath))
+            
+            # Ha több fájl van, mint a maximum, töröljük a legrégebbieket
+            if len(json_files) > max_files:
+                # Rendezés módosítási idő szerint (legrégebbi először)
+                json_files.sort(key=lambda x: x[0])
+                
+                # Törlendő fájlok száma
+                files_to_delete = len(json_files) - max_files
+                
+                for i in range(files_to_delete):
+                    old_file = json_files[i][1]
+                    try:
+                        os.remove(old_file)
+                        print(f"[SIMULATOR] Deleted old result file: {os.path.basename(old_file)}")
+                    except Exception as e:
+                        print(f"[SIMULATOR] Warning: Could not delete old file {old_file}: {e}")
+        except Exception as e:
+            print(f"[SIMULATOR] Warning: Could not cleanup old results: {e}")

@@ -73,7 +73,8 @@ function runSimulation() {
             console.log("[Debug] data.data keys:", data.data ? Object.keys(data.data) : "N/A");
             
             // FIX: Brutális mélységi keresés a többszörösen becsomagolt JSON-ben
-            const payload = data.data && data.data.telemetry_log ? data.data : (data.data && data.data.data ? data.data.data : (data.data || data));
+            // A payload tartalmazza a telemetry_log-ot, components-ot, bio_logs-ot, stb.
+            const payload = data.data || data;
             const log = payload.telemetry_log || [];
 
             console.log("[Debug] Payload type:", typeof payload);
@@ -120,17 +121,32 @@ function runSimulation() {
             
             // Csak a bio-stream-et frissítjük
             const streamBox = document.getElementById('bio-stream');
-            if (streamBox && Array.isArray(payload.bio_logs)) {
-                streamBox.innerHTML = '';
-                payload.bio_logs.forEach((log, index) => {
-                    setTimeout(() => {
-                        const entry = document.createElement('div');
-                        entry.className = 'log-entry';
-                        entry.innerHTML = `<span class="log-timestamp">[T+${index}]</span> ${log}`;
-                        streamBox.appendChild(entry);
-                        streamBox.scrollTop = streamBox.scrollHeight;
-                    }, index * 40);
-                });
+            console.log("[Debug] bio_logs check:", {
+                streamBox: !!streamBox,
+                payload: !!payload,
+                bio_logs: payload ? payload.bio_logs : "N/A",
+                bio_logs_type: payload ? typeof payload.bio_logs : "N/A",
+                bio_logs_is_array: payload ? Array.isArray(payload.bio_logs) : "N/A",
+                payload_keys: payload ? Object.keys(payload) : "N/A"
+            });
+            
+            if (streamBox) {
+                if (Array.isArray(payload.bio_logs) && payload.bio_logs.length > 0) {
+                    streamBox.innerHTML = '';
+                    payload.bio_logs.forEach((log, index) => {
+                        setTimeout(() => {
+                            const entry = document.createElement('div');
+                            entry.className = 'log-entry';
+                            entry.innerHTML = `<span class="log-timestamp">[T+${index}]</span> ${log}`;
+                            streamBox.appendChild(entry);
+                            streamBox.scrollTop = streamBox.scrollHeight;
+                        }, index * 40);
+                    });
+                } else {
+                    // Ha nincs bio_logs, vagy üres, akkor legalább egy alapértelmezett üzenetet jelenítsünk meg
+                    console.warn("[Warning] bio_logs is missing or empty!");
+                    streamBox.innerHTML = '<div class="log-entry">[T-0] Waiting for simulation logs...</div>';
+                }
             }
         }
     })
