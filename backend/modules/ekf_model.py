@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 class EKFSimulator:
     """
@@ -70,7 +71,9 @@ class EKFSimulator:
         # Az EKF csak akkor jelez hibát, ha nagyon biztos benne (60% alatt)
         if self.confidence < 60.0:
             self.anomaly_detected = True
-            self.detection_latency = 50000 # Nagyon lassú (napok)
+            # Dinamikus detection latency számítás a hiba típusa alapján
+            # Tudományos alap: EKF valószínűségszámítási módszere miatt lassan reagál
+            self.detection_latency = self._calculate_detection_latency()
         else:
             self.anomaly_detected = False
             
@@ -93,3 +96,44 @@ class EKFSimulator:
         else:
             self.scenes_today = 0
             self.data_loss_today = 700
+    
+    def _calculate_detection_latency(self):
+        """
+        Dinamikus detection latency számítás a hiba típusa alapján.
+        Tudományos alap: EKF valószínűségszámítási módszere miatt lassan reagál.
+        
+        Returns:
+            int: Detection latency percben
+        """
+        gps = self.model.get_gps_measurement()
+        
+        # GPS timeout (akku < 10%): 1-2 nap (1440-2880 perc)
+        # Az EKF lassan észleli, mert csak a GPS jel hiányát látja
+        if gps is None:
+            # 1-2 nap közötti véletlenszerű érték
+            return random.randint(1440, 2880)  # 1-2 nap
+        
+        # GPS error (GPS antenna hiba vagy spoofing): 0.5-2 nap (720-2880 perc)
+        # Az EKF heurisztikusan próbálja korrigálni, de lassan reagál
+        if self.model.gps_error > 50.0:
+            # Minél nagyobb a hiba, annál gyorsabban észleli (de még mindig lassan)
+            if self.model.gps_error > 80.0:
+                # Nagy hiba: 0.5-1 nap
+                return random.randint(720, 1440)
+            else:
+                # Közepes hiba: 1-2 nap
+                return random.randint(1440, 2880)
+        
+        # IMU drift: 2-5 nap (2880-7200 perc)
+        # Fokozatos hiba, az EKF lassan észleli
+        if hasattr(self.model, 'imu_accumulated_error') and self.model.imu_accumulated_error > 0.2:
+            # Minél nagyobb a drift, annál gyorsabban észleli
+            if self.model.imu_accumulated_error > 0.5:
+                # Nagy drift: 2-3 nap
+                return random.randint(2880, 4320)
+            else:
+                # Közepes drift: 3-5 nap
+                return random.randint(4320, 7200)
+        
+        # Alapértelmezett: 2-3 nap (ha nem tudjuk meghatározni a hiba típusát)
+        return random.randint(2880, 4320)
