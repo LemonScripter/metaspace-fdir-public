@@ -158,23 +158,23 @@
             <div class="section-header">Miért Nincs Elég a Valószínűségi Módszer?</div>
             <div style="background:rgba(255,107,107,0.05); border-left:3px solid var(--alert-red); padding:15px; margin-top:15px;">
                 <p style="margin-bottom:10px; color:var(--text-main);">
-                    <strong style="color:var(--alert-red);">EKF Feltételezés:</strong> Minden hiba Gauss-zaj (haranggörbe)<br>
-                    <strong style="color:var(--alert-red);">Valóság:</strong> A hardver hibák nem Gauss-eloszlásúak—rendszerszintűek
+                    <strong style="color:var(--alert-red);">EKF alapfeltevése:</strong> Minden hiba Gauss-zaj (haranggörbe szerű eloszlás)<br>
+                    <strong style="color:var(--alert-red);">A valóság:</strong> A hardverhibák nem Gauss-eloszlásúak—rendszerszintű problémákról van szó
                 </p>
-                <p style="margin-bottom:10px; color:var(--text-dim); font-size:14px;">
-                    <strong>Amikor a GPS antenna törés:</strong><br>
-                    • EKF látja: "Ezek a mérések nagy szórással rendelkeznek"<br>
-                    • EKF gondolja: "Növeljük a bizonytalanság becslését, bízzunk jobban más szenzorokban"<br>
-                    • EKF cselekszik: Fokozatosan elhalványítja a GPS-t, miközben jobban bízik az IMU-ban<br>
-                    • <strong style="color:var(--alert-red);">Eredmény:</strong> Idővel a pozíció korrigálatlanul eltér
+                <p style="margin-bottom:10px; color:var(--text-dim); font-size:14px; line-height:1.8;">
+                    <strong style="color:var(--text-main);">Példa: GPS antenna meghibásodás esetén</strong><br>
+                    • <strong>EKF észleli:</strong> "Ezek a mérések nagy szórással rendelkeznek"<br>
+                    • <strong>EKF döntése:</strong> "Növeljük a bizonytalanság becslését, jobban bízzunk a többi szenzorban"<br>
+                    • <strong>EKF cselekedete:</strong> Fokozatosan csökkenti a GPS súlyát, miközben jobban bízik az IMU-ban<br>
+                    • <strong style="color:var(--alert-red);">Végeredmény:</strong> Idővel a pozíció korrigálatlanul eltér, a műhold eltéved
                 </p>
-                <p style="margin-bottom:0; color:var(--text-main);">
-                    <strong style="color:var(--neon-cyan);">MetaSpace megközelítés:</strong><br>
-                    • Megfigyeli: "GPS és IMU adatok 30+ méterrel eltérnek"<br>
-                    • Ellenőrzi szabályt: "Érvényes GPS/IMU eltérés &lt;30 méter"<br>
-                    • Következtetés: "Az egyik hazudik—melyik?"<br>
-                    • Akció: Keresztvalidáció használata (GPS vs Radar vs orbitális mechanika)<br>
-                    • <strong style="color:var(--success-green);">Eredmény:</strong> Helyes válasz <strong>&lt;100 ms</strong> alatt
+                <p style="margin-bottom:0; color:var(--text-main); line-height:1.8;">
+                    <strong style="color:var(--neon-cyan);">MetaSpace megközelítése:</strong><br>
+                    • <strong>Megfigyelés:</strong> "GPS és IMU adatok több mint 30 méterrel eltérnek egymástól"<br>
+                    • <strong>Szabályellenőrzés:</strong> "Érvényes GPS/IMU eltérés nem haladhatja meg a 30 métert"<br>
+                    • <strong>Következtetés:</strong> "Az egyik szenzor hibás adatot szolgáltat—melyik?"<br>
+                    • <strong>Akció:</strong> Keresztvalidáció alkalmazása (GPS vs Radar vs orbitális mechanika)<br>
+                    • <strong style="color:var(--success-green);">Végeredmény:</strong> Helyes válasz <strong>100 milliszekundum</strong> alatt, a hibás szenzor izolálva
                 </p>
             </div>
         </section>
