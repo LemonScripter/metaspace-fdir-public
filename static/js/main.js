@@ -56,10 +56,18 @@ function runSimulation() {
         console.error("[runSimulation] Canvas element not found!");
     }
 
+    // Auto-validate flag beolvasása
+    const autoValidateCheckbox = document.getElementById('auto-validate-checkbox');
+    const auto_validate = autoValidateCheckbox ? autoValidateCheckbox.checked : false;
+    
     fetch('/api/simulation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scenario: scenario, duration: duration })
+        body: JSON.stringify({ 
+            scenario: scenario, 
+            duration: duration,
+            auto_validate: auto_validate  // Opcionális validáció flag
+        })
     })
     .then(response => {
         if (!response.ok) throw new Error('Server returned ' + response.status);
@@ -116,6 +124,14 @@ function runSimulation() {
             }
             
             updateComponentGrid(payload.components || []);
+            
+            // Validációs panel megjelenítése (ha van validációs jegyzőkönyv)
+            if (payload.validation_report) {
+                displayValidationReport(payload.validation_report);
+            } else {
+                hideValidationPanel();
+            }
+            
             // A narrative-t nem írjuk felül, mert az interpretation.js már írja az Analysis dobozba
             // generateNarrative(payload.narrative || "Complete", payload.bio_logs || []);
             
@@ -225,7 +241,8 @@ function renderChart(results, scenario) {
                         tension: 0.4,
                         borderWidth: 2,
                         stepped: false,
-                        spanGaps: false
+                        spanGaps: false,
+                        pointStyle: 'circle' // Legend-ben kék karika megjelenítéséhez
                     }
                 ]
             },
@@ -277,7 +294,21 @@ function renderChart(results, scenario) {
                             color: '#ccc', 
                             font: { family: 'Rajdhani', size: 12 },
                             usePointStyle: true,
-                            padding: 15
+                            padding: 15,
+                            generateLabels: function(chart) {
+                                const original = Chart.defaults.plugins.legend.labels.generateLabels;
+                                const labels = original.call(this, chart);
+                                // MetaSpace label-hez kék karika
+                                labels.forEach((label) => {
+                                    if (label.text === 'MetaSpace') {
+                                        label.pointStyle = 'circle';
+                                        label.fillStyle = '#00f3ff';
+                                        label.strokeStyle = '#00f3ff';
+                                        label.lineWidth = 2;
+                                    }
+                                });
+                                return labels;
+                            }
                         },
                         position: 'top'
                     },
@@ -323,28 +354,60 @@ function renderChart(results, scenario) {
 
 /**
  * Updates the health matrix grid.
+ * Frissíti mindkét Component Health Matrix-et (1. sor és 3. sor).
  */
 function updateComponentGrid(components) {
-    const grid = document.getElementById('component-grid');
-    if (!grid || !Array.isArray(components)) return;
+    if (!Array.isArray(components)) return;
     
-    grid.innerHTML = '';
-    components.forEach(comp => {
-        const card = document.createElement('div');
-        card.className = 'component-card';
-        const sColor = comp.status === 'HEALTHY' ? 'var(--success-green)' : 'var(--alert-red)';
-        const description = comp.description || 'Komponens részletei nem elérhetők.';
-        card.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <span style="font-size:13px; color:#666;">ID: ${comp.id}</span>
-                <span class="status-dot" style="background:${sColor}; width:10px; height:10px; border-radius:50%; box-shadow:0 0 8px ${sColor};"></span>
-            </div>
-            <div style="font-weight:bold; margin-bottom:10px; font-size:16px; color:#eee;">${comp.name}</div>
-            <div style="font-size:13px; text-transform:uppercase; color:${sColor}; margin-bottom:14px; font-weight:bold;">${comp.status}</div>
-            <div style="font-size:13px; color:#aaa; line-height:1.6; flex:1; overflow-y:auto;">${description}</div>
-        `;
-        grid.appendChild(card);
-    });
+    // Frissítjük az 1. sorban lévő grid-et (3. oszlop)
+    const grid1 = document.getElementById('component-grid');
+    if (grid1) {
+        grid1.innerHTML = '';
+        components.forEach(comp => {
+            const card = document.createElement('div');
+            card.className = 'component-card';
+            const sColor = comp.status === 'HEALTHY' ? 'var(--success-green)' : 'var(--alert-red)';
+            const description = comp.description || 'Komponens részletei nem elérhetők.';
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <span style="font-size:13px; color:#666;">ID: ${comp.id}</span>
+                    <span class="status-dot" style="background:${sColor}; width:10px; height:10px; border-radius:50%; box-shadow:0 0 8px ${sColor};"></span>
+                </div>
+                <div style="font-weight:bold; margin-bottom:10px; font-size:16px; color:#eee;">${comp.name}</div>
+                <div style="font-size:13px; text-transform:uppercase; color:${sColor}; margin-bottom:14px; font-weight:bold;">${comp.status}</div>
+                <div style="font-size:13px; color:#aaa; line-height:1.6; flex:1; overflow-y:auto;">${description}</div>
+            `;
+            grid1.appendChild(card);
+        });
+    }
+    
+    // Frissítjük a 3. sorban lévő grid-et (teljes szélesség)
+    const grid3 = document.getElementById('component-grid-row3');
+    if (grid3) {
+        grid3.innerHTML = '';
+        components.forEach(comp => {
+            const card = document.createElement('div');
+            card.className = 'component-card';
+            const sColor = comp.status === 'HEALTHY' ? 'var(--success-green)' : 'var(--alert-red)';
+            const description = comp.description || 'Komponens részletei nem elérhetők.';
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <span style="font-size:13px; color:#666;">ID: ${comp.id}</span>
+                    <span class="status-dot" style="background:${sColor}; width:10px; height:10px; border-radius:50%; box-shadow:0 0 8px ${sColor};"></span>
+                </div>
+                <div style="font-weight:bold; margin-bottom:10px; font-size:16px; color:#eee;">${comp.name}</div>
+                <div style="font-size:13px; text-transform:uppercase; color:${sColor}; margin-bottom:14px; font-weight:bold;">${comp.status}</div>
+                <div style="font-size:13px; color:#aaa; line-height:1.6; flex:1; overflow-y:auto;">${description}</div>
+            `;
+            grid3.appendChild(card);
+        });
+        
+        // Megjelenítjük a 3. sorban lévő Component Health Matrix-et
+        const matrixRow3 = document.getElementById('component-matrix-row3');
+        if (matrixRow3) {
+            matrixRow3.style.display = 'flex';
+        }
+    }
 }
 
 /**
@@ -380,6 +443,143 @@ window.onclick = function(event) {
     const modal = document.getElementById('intro-modal');
     if (event.target == modal) modal.style.display = "none";
 };
+
+/**
+ * Validációs jegyzőkönyv megjelenítése
+ */
+function displayValidationReport(validationReport) {
+    const panel = document.getElementById('validation-panel');
+    const content = document.getElementById('validation-content');
+    
+    if (!panel || !content) {
+        console.warn("[Validation] Panel or content element not found");
+        return;
+    }
+    
+    const summary = validationReport.summary || {};
+    const unitTests = validationReport.unit_tests || {};
+    const integrationTests = validationReport.integration_tests || {};
+    const simulationValidation = validationReport.simulation_validation || {};
+    const recommendations = validationReport.recommendations || [];
+    
+    // Státusz szín meghatározása
+    let statusColor = '#ff6b6b'; // Piros (FAILED)
+    let statusIcon = '❌';
+    if (summary.status === 'PASSED') {
+        statusColor = '#51cf66'; // Zöld (PASSED)
+        statusIcon = '✅';
+    } else if (summary.success_rate >= 80) {
+        statusColor = '#ffd43b'; // Sárga (WARNING)
+        statusIcon = '⚠️';
+    }
+    
+    // HTML generálása
+    let html = `
+        <div style="background:rgba(0,10,20,0.6); border:1px solid ${statusColor}; border-left-width:4px; padding:15px; margin-bottom:15px; border-radius:4px; box-sizing:border-box; width:100%; max-width:100%;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="font-size:18px; font-weight:bold; color:${statusColor};">
+                    ${statusIcon} ${summary.status || 'UNKNOWN'}
+                </div>
+                <div style="font-size:14px; color:#aaa;">
+                    ${summary.success_rate || 0}% Success Rate
+                </div>
+            </div>
+            <div style="font-size:13px; color:#ccc; margin-top:8px;">
+                Total Tests: ${summary.total_tests || 0} | 
+                Passed: <span style="color:#51cf66;">${summary.passed || 0}</span> | 
+                Failed: <span style="color:#ff6b6b;">${summary.failed || 0}</span>
+            </div>
+        </div>
+        
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:15px; width:100%; max-width:100%; box-sizing:border-box; overflow:hidden;">
+            <div style="background:rgba(0,10,20,0.6); border:1px solid rgba(255,255,255,0.1); padding:12px; border-radius:4px; box-sizing:border-box;">
+                <div style="font-size:12px; color:#888; margin-bottom:5px;">Unit Tests</div>
+                <div style="font-size:20px; font-weight:bold; color:${unitTests.success_rate === 100 ? '#51cf66' : '#ff6b6b'};">
+                    ${unitTests.passed || 0}/${unitTests.total || 0}
+                </div>
+                <div style="font-size:11px; color:#aaa; margin-top:4px;">${unitTests.success_rate || 0}%</div>
+            </div>
+            
+            <div style="background:rgba(0,10,20,0.6); border:1px solid rgba(255,255,255,0.1); padding:12px; border-radius:4px; box-sizing:border-box;">
+                <div style="font-size:12px; color:#888; margin-bottom:5px;">Integration Tests</div>
+                <div style="font-size:20px; font-weight:bold; color:${integrationTests.success_rate === 100 ? '#51cf66' : '#ff6b6b'};">
+                    ${integrationTests.passed || 0}/${integrationTests.total || 0}
+                </div>
+                <div style="font-size:11px; color:#aaa; margin-top:4px;">${integrationTests.success_rate || 0}%</div>
+            </div>
+            
+            <div style="background:rgba(0,10,20,0.6); border:1px solid rgba(255,255,255,0.1); padding:12px; border-radius:4px; box-sizing:border-box;">
+                <div style="font-size:12px; color:#888; margin-bottom:5px;">Simulation Validation</div>
+                <div style="font-size:20px; font-weight:bold; color:${simulationValidation.success_rate === 100 ? '#51cf66' : '#ff6b6b'};">
+                    ${simulationValidation.passed || 0}/${simulationValidation.total_checks || 0}
+                </div>
+                <div style="font-size:11px; color:#aaa; margin-top:4px;">${simulationValidation.success_rate || 0}%</div>
+            </div>
+        </div>
+    `;
+    
+    // Recommendations
+    if (recommendations.length > 0) {
+        html += '<div style="background:rgba(0,10,20,0.6); border:1px solid rgba(255,255,255,0.1); padding:12px; border-radius:4px; margin-top:15px; box-sizing:border-box; width:100%; max-width:100%;">';
+        html += '<div style="font-size:13px; font-weight:bold; color:#aaa; margin-bottom:8px;">Recommendations:</div>';
+        recommendations.forEach(rec => {
+            html += `<div style="font-size:12px; color:#ccc; margin-bottom:4px; padding-left:10px;">${rec}</div>`;
+        });
+        html += '</div>';
+    }
+    
+    // Download button
+    html += `
+        <div style="margin-top:15px; display:flex; gap:10px; width:100%; max-width:100%; box-sizing:border-box;">
+            <button onclick="downloadValidationReport()" style="
+                background:rgba(0,243,255,0.1); 
+                border:1px solid var(--neon-cyan); 
+                color:var(--neon-cyan); 
+                padding:8px 15px; 
+                border-radius:4px; 
+                cursor:pointer;
+                font-size:12px;
+                box-sizing:border-box;
+            ">Download Validation Report (JSON)</button>
+        </div>
+    `;
+    
+    content.innerHTML = html;
+    panel.style.display = 'block';
+    
+    // Validációs adatok tárolása globálisan (download-hoz)
+    window.currentValidationReport = validationReport;
+    console.log("[Validation] Report displayed successfully");
+}
+
+/**
+ * Validációs panel elrejtése
+ */
+function hideValidationPanel() {
+    const panel = document.getElementById('validation-panel');
+    if (panel) {
+        panel.style.display = 'none';
+    }
+}
+
+/**
+ * Validációs jegyzőkönyv letöltése
+ */
+function downloadValidationReport() {
+    if (!window.currentValidationReport) {
+        alert('No validation report available');
+        return;
+    }
+    
+    const dataStr = JSON.stringify(window.currentValidationReport, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `validation_report_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+}
 
 // End of Controller Stack
 console.log("[System] Controller Verified.");

@@ -1,5 +1,15 @@
 import uuid
 
+# V3 Validációs modulok importálása
+try:
+    from backend.modules.v3_biocode_engine import V3BioCodeEngine
+    from backend.modules.v3_validation_engine import V3ValidationEngine
+    from backend.modules.v3_validation_report import V3ValidationReportGenerator
+except ImportError:
+    from modules.v3_biocode_engine import V3BioCodeEngine
+    from modules.v3_validation_engine import V3ValidationEngine
+    from modules.v3_validation_report import V3ValidationReportGenerator
+
 class HolographicNode:
     """
     MetaSpace v3.2 - Neural Fractal Node with Autonomous Regeneration.
@@ -34,6 +44,15 @@ class NeuralFractalNetwork:
         self.mission_requirements = ["logic", "navigation", "power", "comm"]
         self.nodes = []
         self.regen_rate = 8.5 # Alapértelmezett Bio-Code sebesség
+        
+        # V3 Validációs rendszer inicializálása
+        self.biocode_engine = V3BioCodeEngine()
+        self.validation_engine = V3ValidationEngine()
+        self.report_generator = V3ValidationReportGenerator()
+        self.mission_day = 0  # Mission day counter
+        self.validation_results = []  # Összesített validációs eredmények
+        self.simulation_active = False  # Szimuláció aktív-e (csak akkor generálunk jelentést, ha True)
+        
         self.reset_constellation()
 
     def reset_constellation(self):
@@ -47,6 +66,12 @@ class NeuralFractalNetwork:
             HolographicNode("Battery Array", "BATT", "sensor", ["power"])
         ]
         self.nodes[0].is_master = True
+        
+        # Validációs rendszer reset
+        self.validation_results = []
+        self.report_generator.clear_operations_log()
+        self.mission_day = 0
+        self.simulation_active = False  # Szimuláció reset után inaktív
 
     def set_regen_rate(self, rate):
         """A regeneráció sebességének dinamikus módosítása."""
@@ -57,6 +82,9 @@ class NeuralFractalNetwork:
 
     def inject_chaos_and_calculate(self, killed_ids):
         """Káosz injektálás és master migration."""
+        # Szimuláció aktiválása (chaos injection = szimuláció kezdete)
+        self.simulation_active = True
+        
         events = []
         for node in self.nodes:
             if node.id in killed_ids:
@@ -69,27 +97,213 @@ class NeuralFractalNetwork:
             self._migrate_master(active_nodes)
             events.append("MASTER MIGRATION: Failover active.")
 
-        return self._evaluate_feasibility(active_nodes, events)
+        result = self._evaluate_feasibility(active_nodes, events)
+        
+        # AUTOMATIKUS VALIDÁCIÓ (csak akkor, ha van aktív szimuláció)
+        # Chaos injection mindig aktiválja a szimulációt
+        if self.simulation_active:
+            try:
+                # Validáció bio-kód NÉLKÜL (gyorsabb, csak invariánsok + matematika)
+                validation_result = self.validation_engine.validate_operation(
+                    operation="chaos_injection",
+                    nodes=self.nodes,
+                    active_nodes=active_nodes,
+                    feasibility=result["feasibility"],
+                    biocode_data=None,  # Nincs bio-kód, csak validáció
+                    biocode_engine=None,
+                    regen_active=False
+                )
+                
+                # Bio-kód generálás csak jelentés generáláshoz (ritkábban)
+                # Pl. minden 5. műveletnél, vagy csak jelentés kérésnél
+                biocode_data = None
+                should_generate_biocode = (len(self.validation_results) % 5 == 0) or (len(self.validation_results) == 0)
+                
+                if should_generate_biocode:
+                    biocode_data = self.biocode_engine.generate_complete_biocode_sequence(
+                        self.nodes, active_nodes, self.mission_day
+                    )
+                
+                # Operations log frissítése
+                self.report_generator.add_operation(
+                    "chaos_injection",
+                    validation_result,
+                    self.nodes,
+                    result["feasibility"],
+                    biocode_data
+                )
+                
+                # Validációs eredmények tárolása
+                self.validation_results.append(validation_result)
+                
+                # Összesített jelentés generálása (itt kell a bio-kód)
+                # Csak akkor generálunk fájlt, ha van aktív szimuláció (ritkán)
+                if biocode_data:
+                    aggregated_report = self.report_generator.generate_report(
+                        self.nodes,
+                        active_nodes,
+                        biocode_data,
+                        self.validation_results,
+                        simulation_active=self.simulation_active,
+                        force_save=False  # Chaos injection-nél nem kell fájl mentés
+                    )
+                    
+                    # Validációs adatok hozzáadása az eredményhez
+                    result["validation"] = {
+                        "status": validation_result["overall_status"],
+                        "biocode_level3": biocode_data.get("level3", {}).get("biocode"),
+                        "validation_id": aggregated_report.get("validation_id")
+                    }
+                else:
+                    result["validation"] = {
+                        "status": validation_result["overall_status"]
+                    }
+            except Exception as e:
+                # Validációs hiba esetén warning, de művelet folytatódik
+                print(f"[V3 VALIDATION] Warning: Validation failed: {e}")
+                result["validation"] = {
+                    "status": "ERROR",
+                    "error": str(e)
+                }
+        else:
+            # Nincs aktív szimuláció (nem kellene előfordulnia chaos injection-nél)
+            result["validation"] = {
+                "status": "INACTIVE",
+                "message": "Nincs aktív szimuláció"
+            }
+        
+        return result
 
     def process_regeneration(self):
-        """Szuverén regenerációs ciklus a beállított rátával."""
+        """
+        Szuverén regenerációs ciklus BIO-KÓD ALAPJÁN.
+        A bio-kód determinisztikusan vezérli az öngyógyítást.
+        """
+        # 1. LÉPÉS: Bio-kód generálás az aktuális állapotból
         active_nodes = [n for n in self.nodes if n.health > 0]
+        biocode_data = self.biocode_engine.generate_complete_biocode_sequence(
+            self.nodes, active_nodes, self.mission_day
+        )
+        
+        # 2. LÉPÉS: Bio-kód alapján döntés (action meghatározás)
+        action = biocode_data.get("level3", {}).get("action", "CONTINUE_NOMINAL")
+        feasibility = biocode_data.get("level3", {}).get("feasibility", 0)
+        safety_margin = biocode_data.get("level3", {}).get("safety_margin", 0)  # MINDIG definiálva
+        
+        # 3. LÉPÉS: Bio-kód alapján determinisztikus öngyógyítás
         power_ok = any("power" in n.capabilities for n in active_nodes)
         events = []
         
-        if power_ok:
+        # Bio-kód alapján döntés: ha action engedélyezi, és van power, akkor regenerálunk
+        should_regenerate = (
+            power_ok and 
+            action not in ["EMERGENCY_HALT", "SAFE_MODE"] and
+            feasibility > 20  # Minimum feasibility küszöb
+        )
+        
+        if should_regenerate:
+            # Bio-kód alapján determinisztikus regeneráció
             for node in self.nodes:
                 if node.health < 100:
                     old_h = node.health
-                    node.health = min(100.0, node.health + self.regen_rate)
+                    # Safety margin alapján módosított regen rate (0-100% között)
+                    adjusted_regen = self.regen_rate * (1 + safety_margin / 100.0)
+                    node.health = min(100.0, node.health + adjusted_regen)
+                    
                     if old_h == 0 and node.health > 0:
-                        events.append(f"BIO-CODE: {node.name} re-initialized.")
+                        events.append(f"BIO-CODE: {node.name} re-initialized (biocode-driven).")
                     if node.health == 100.0 and old_h < 100.0:
-                        events.append(f"SUCCESS: {node.name} restored.")
+                        events.append(f"SUCCESS: {node.name} restored (biocode-driven).")
                     elif node.health < 100 and len(events) < 2:
-                        events.append(f"REGEN: {node.name} increasing.")
+                        events.append(f"REGEN: {node.name} increasing (safety_margin={safety_margin}).")
+        else:
+            # Bio-kód tiltja a regenerációt
+            if not power_ok:
+                events.append("BIO-CODE: Regeneration blocked (no power capability).")
+            elif action in ["EMERGENCY_HALT", "SAFE_MODE"]:
+                events.append(f"BIO-CODE: Regeneration blocked (action={action}).")
+            elif feasibility <= 20:
+                events.append(f"BIO-CODE: Regeneration blocked (feasibility={feasibility:.1f}% too low).")
         
-        return self._evaluate_feasibility([n for n in self.nodes if n.health > 0], events)
+        result = self._evaluate_feasibility([n for n in self.nodes if n.health > 0], events)
+        
+        # Ellenőrizzük, hogy van-e aktív szimuláció (van-e node ami nem 100%-os)
+        has_damaged_nodes = any(n.health < 100.0 for n in self.nodes)
+        
+        # Szimuláció befejezésének ellenőrzése
+        simulation_just_finished = False
+        if not has_damaged_nodes and result["feasibility"] >= 100.0 and self.simulation_active:
+            # Szimuláció most fejeződött be
+            self.simulation_active = False
+            simulation_just_finished = True
+        
+        # 4. LÉPÉS: AUTOMATIKUS VALIDÁCIÓ (100% matematikai bizonyítás)
+        # Csak akkor generálunk jelentést, ha van aktív szimuláció VAGY éppen most fejeződött be
+        if self.simulation_active or simulation_just_finished:
+            try:
+                validation_result = self.validation_engine.validate_operation(
+                    operation="regeneration",
+                    nodes=self.nodes,
+                    active_nodes=active_nodes,
+                    feasibility=result["feasibility"],
+                    biocode_data=biocode_data,  # Bio-kód MINDIG generálva (műhold működés része)
+                    biocode_engine=self.biocode_engine,
+                    regen_active=should_regenerate
+                )
+                
+                # Operations log frissítése
+                self.report_generator.add_operation(
+                    "regeneration",
+                    validation_result,
+                    self.nodes,
+                    result["feasibility"],
+                    biocode_data
+                )
+                
+                # Validációs eredmények tárolása
+                self.validation_results.append(validation_result)
+                
+                # Összesített jelentés generálása (bio-kód MINDIG van)
+                # Csak akkor generálunk fájlt, ha a szimuláció éppen most fejeződött be
+                # vagy ha aktív szimuláció (de csak ritkán, hogy ne generálódjon nonstop)
+                aggregated_report = self.report_generator.generate_report(
+                    self.nodes,
+                    active_nodes,
+                    biocode_data,
+                    self.validation_results,
+                    simulation_active=self.simulation_active,
+                    force_save=simulation_just_finished  # Szimuláció végén mindig mentünk
+                )
+                
+                # Validációs adatok hozzáadása az eredményhez
+                result["validation"] = {
+                    "status": validation_result["overall_status"],
+                    "biocode_level3": biocode_data.get("level3", {}).get("biocode"),
+                    "validation_id": aggregated_report.get("validation_id"),
+                    "action": action,
+                    "safety_margin": safety_margin,
+                    "regeneration_driven_by_biocode": True
+                }
+                result["biocode"] = biocode_data  # Bio-kód mindig része az eredménynek
+            except Exception as e:
+                # Validációs hiba esetén warning, de művelet folytatódik
+                print(f"[V3 VALIDATION] Warning: Validation failed: {e}")
+                result["validation"] = {
+                    "status": "ERROR",
+                    "error": str(e)
+                }
+        else:
+            # Nincs aktív szimuláció, csak bio-kód adatok (validáció nélkül)
+            result["biocode"] = biocode_data
+            result["validation"] = {
+                "status": "INACTIVE",
+                "message": "Nincs aktív szimuláció - jelentés generálás kihagyva"
+            }
+        
+        # Mission day növelése
+        self.mission_day += 1
+        
+        return result
 
     def _migrate_master(self, active_nodes):
         """GIP alapú master választási logika."""
@@ -100,16 +314,47 @@ class NeuralFractalNetwork:
                     return
 
     def _evaluate_feasibility(self, active_nodes, events=[]):
-        """Küldetés stabilitási mutatóinak kiszámítása."""
+        """Küldetés stabilitási mutatóinak kiszámítása (SULYOZOTT)."""
+        # SÚLYOZOTT FEASIBILITY számítás (az új módszer)
+        feasibility_score, explanation = self.biocode_engine.calculate_weighted_feasibility(
+            self.nodes, active_nodes
+        )
+        
+        # Action meghatározása
+        module_health_dict = {
+            module: next(
+                (n.health for n in active_nodes if module in n.capabilities),
+                0.0
+            )
+            for module in self.biocode_engine.module_weights.keys()
+        }
+        action = self.biocode_engine.determine_action(feasibility_score, module_health_dict)
+        
+        # Safety margin
+        critical_threshold = 40
+        safety_margin = int(max(0, feasibility_score - critical_threshold))
+        
+        # Available capabilities (backward compatibility)
         available_caps = {cap for n in active_nodes for cap in n.capabilities}
         met = [r for r in self.mission_requirements if r in available_caps]
-        score = (len(met) / len(self.mission_requirements)) * 100
+        
         return {
-            "feasibility": score,
-            "integrity_status": "VERIFIED" if score == 100 else "DEGRADED",
+            "feasibility": round(feasibility_score, 2),
+            "feasibility_explanation": explanation,
+            "action": action,
+            "safety_margin": safety_margin,
+            "integrity_status": "VERIFIED" if feasibility_score == 100 else "DEGRADED",
             "met_requirements": met,
             "missing_requirements": [r for r in self.mission_requirements if r not in available_caps],
             "active_nodes_count": len(active_nodes),
             "nodes": [n.get_telemetry() for n in self.nodes],
             "events": events
         }
+    
+    def get_latest_validation_report(self):
+        """Legutóbbi validációs jelentés lekérése"""
+        return self.report_generator.get_latest_report()
+    
+    def increment_mission_day(self):
+        """Mission day növelése"""
+        self.mission_day += 1

@@ -28,7 +28,18 @@ class SimulationEngine:
         if not os.path.exists(self.results_dir):
             os.makedirs(self.results_dir, exist_ok=True)
 
-    def run(self, scenario, duration):
+    def run(self, scenario, duration, auto_validate=False):
+        """
+        Szimuláció futtatása.
+        
+        Args:
+            scenario: Hibaforgatókönyv típusa
+            duration: Szimuláció hossza (napokban)
+            auto_validate: Ha True, automatikusan futtatja a validációt (opcionális)
+        
+        Returns:
+            sim_id: Szimuláció egyedi azonosítója
+        """
         sim_id = str(uuid.uuid4())
         start_time = time.time()
         
@@ -90,7 +101,7 @@ class SimulationEngine:
         
         # Debug: Kiírjuk a véletlenszerűen generált hibát
         if selected_failure:
-            print(f"[SIMULATOR] Véletlenszerű hiba generálva: {selected_failure} (Nap: {failure_day} / {duration} napos szimuláció)")
+            print(f"[SIMULATOR] Veletlenszeru hiba generalva: {selected_failure} (Nap: {failure_day} / {duration} napos szimulacio)")
         
         dt_minutes = 60 
         total_minutes = duration * 24 * 60
@@ -341,8 +352,25 @@ class SimulationEngine:
             'bio_logs': bio_logs,
             'timestamp': datetime.now().isoformat(),
             'scenario': scenario,
-            'duration': duration
+            'duration': duration,
+            'validation_enabled': auto_validate  # Jelzi, hogy validálva volt-e
         }
+        
+        # OPCIONÁLIS: Validáció futtatása (ha engedélyezve)
+        if auto_validate:
+            try:
+                from backend.modules.validation_manager import ValidationManager
+                validation_manager = ValidationManager()
+                validation_report = validation_manager.validate_simulation(sim_id, result_package)
+                result_package['validation_report'] = validation_report
+                print(f"[SIMULATOR] Validation completed: {validation_report['summary']['status']} ({validation_report['summary']['success_rate']}%)")
+            except Exception as e:
+                print(f"[SIMULATOR] Warning: Validation failed: {e}")
+                result_package['validation_report'] = {
+                    'status': 'ERROR',
+                    'error': str(e),
+                    'note': 'Validation attempted but failed'
+                }
 
         # Mentés fájlba a results könyvtárba
         try:

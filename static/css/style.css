@@ -79,14 +79,18 @@ header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 30px;
+    padding: 10px 25px;
     
     background: rgba(5, 5, 5, 0.98);
     border-bottom: 1px solid var(--neon-cyan);
     box-shadow: 0 0 20px rgba(0, 243, 255, 0.15);
     z-index: 100;
     
-    /* Header is követi a minimum szélességet */
+    /* Header szélessége egyezik a mission-control-lal */
+    width: 100%;
+    max-width: 1920px;
+    margin: 0 auto;
+    box-sizing: border-box;
     min-width: var(--min-viewport-width);
 }
 
@@ -133,17 +137,20 @@ header {
     display: grid;
     /* 3 Oszlopos fix elrendezés: Bal menü, Közép grafikon, Jobb telemetria */
     grid-template-columns: 320px 1fr 300px;
-    grid-template-rows: auto auto; /* Felső sor (Chart) + Alsó sor (Log) */
+    grid-template-rows: auto auto auto auto; /* 1. sor (Chart + Matrix) + 2. sor (Analysis) + 3. sor (Matrix) + 4. sor (Validation) */
     gap: 20px;
     padding: 25px;
     
     width: 100%;
     max-width: 1920px;
     margin: 0 auto;
+    box-sizing: border-box;
     
     /* Rugalmas magasság */
     height: auto;
     min-height: calc(100vh - 60px);
+    /* A fő grid NEM scrollolható */
+    overflow: visible;
 }
 
 /* --- PANEL STYLES (GLASSMORPHISM) --- */
@@ -160,6 +167,11 @@ header {
     position: relative;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     transition: border-color 0.3s;
+    /* Biztosítjuk, hogy minden panel konzisztens szélességű legyen */
+    box-sizing: border-box;
+    max-width: 100%;
+    /* A nagy panelek NEM scrollolhatók - csak a belső tartalmak */
+    overflow: visible;
 }
 
 .panel:hover {
@@ -193,7 +205,7 @@ header {
 /* --- SECTIONS PLACEMENT --- */
 .controls-area {
     grid-column: 1 / 2;
-    grid-row: 1 / 3; /* Végigfut a bal oldalon */
+    grid-row: 1 / 5; /* Végigfut a bal oldalon (1-5 sor) */
 }
 
 .tactical-display {
@@ -203,19 +215,56 @@ header {
 }
 
 .logs-console {
-    grid-column: 2 / 3;
-    grid-row: 2 / 3;
+    grid-column: 1 / 4; /* Teljes szélesség (1. oszloptól 4-ig) */
+    grid-row: 2 / 3; /* 2. sorban */
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
 }
 
 .telemetry-bay {
-    grid-column: 3 / 4;
-    grid-row: 1 / 3; /* Végigfut a jobb oldalon */
+    grid-column: 3 / 4; /* 3. oszlopban */
+    grid-row: 1 / 2; /* 1. sorban (a grafikon mellett) */
     display: flex;
     flex-direction: column;
     min-height: 0;
+}
+
+/* Component Health Matrix - 3. sorban, teljes szélességben */
+#component-matrix-row3 {
+    grid-column: 1 / 4; /* Teljes szélesség (1. oszloptól 4-ig) */
+    grid-row: 3 / 4; /* 3. sorban */
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* Validációs Panel - 4. sorban, teljes szélességben */
+.validation-panel {
+    grid-column: 1 / 4 !important; /* Teljes szélesség (1. oszloptól 4-ig) */
+    grid-row: 4 / 5 !important; /* 4. sorban */
+    background: var(--bg-panel);
+    border: var(--glass-border);
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    z-index: 1;
+    position: relative;
+    /* Biztosítjuk, hogy ne legyen szélesebb, mint a fölötte lévő Matrix */
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    /* A panel NEM scrollolható */
+    overflow: visible;
+}
+
+#validation-content {
+    margin-top: 15px;
+    width: 100%;
+    box-sizing: border-box;
+    max-width: 100%;
+    /* A belső tartalom sem scrollolható */
+    overflow: visible;
 }
 
 /* --- FORM CONTROLS --- */
@@ -329,7 +378,8 @@ select:focus, input:focus {
 }
 
 /* --- TELEMETRY GRID --- */
-#component-grid {
+#component-grid,
+#component-grid-row3 {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-auto-rows: 1fr; /* Minden sor egyforma magas */
@@ -337,10 +387,21 @@ select:focus, input:focus {
     height: 100%;
     flex: 1;
     min-height: 0;
+    /* A grid NEM scrollolható */
+    overflow: visible;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* 3. sorban lévő Component Health Matrix - teljes szélességben, több oszlop */
+#component-grid-row3 {
+    grid-template-columns: repeat(3, 1fr); /* 3 oszlop, mert teljes szélességben van */
 }
 
 /* JS által generált elemek override-ja */
-#component-grid > div {
+#component-grid > div,
+#component-grid-row3 > div {
     background: rgba(0, 10, 20, 0.6) !important;
     border: 1px solid rgba(255, 255, 255, 0.05) !important;
     border-left-width: 4px !important;
@@ -352,7 +413,8 @@ select:focus, input:focus {
     overflow: hidden;
     height: 100%; /* Minden téglalap egyforma magas */
 }
-#component-grid > div:hover {
+#component-grid > div:hover,
+#component-grid-row3 > div:hover {
     background: rgba(0, 20, 40, 0.8) !important;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 243, 255, 0.2);
@@ -497,8 +559,12 @@ select:focus, input:focus {
 .mission-footer {
     margin-top: auto; /* Ez tolja le az aljára, ha kevés a tartalom */
     width: 100%;
+    max-width: 1920px;
+    margin-left: auto;
+    margin-right: auto;
     min-width: var(--min-viewport-width); /* Követi a rögzített szélességet */
-    padding: 15px 30px;
+    padding: 15px 25px;
+    box-sizing: border-box;
     
     background: rgba(5, 5, 5, 0.98);
     border-top: 1px solid var(--neon-cyan);

@@ -3,6 +3,7 @@ from flask_cors import CORS
 import sys
 import os
 import traceback
+from datetime import datetime
 
 # --- PATH & IMPORT CONFIGURATION ---
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -14,12 +15,25 @@ if backend_dir not in sys.path:
 try:
     from backend.modules.v3_neural_core import NeuralFractalNetwork
     from backend.modules.simulator import SimulationEngine
+    from backend.modules.secure_bridge import SecureBridge
 except ImportError:
     from modules.v3_neural_core import NeuralFractalNetwork
     from modules.simulator import SimulationEngine
+    from modules.secure_bridge import SecureBridge
 
 app = Flask(__name__)
 CORS(app)
+
+# --- SECURE BRIDGE INICIALIZÁLÁS (Titkosítás) ---
+print("[APP] Initializing Secure Bridge...")
+key_path = os.path.join(base_dir, "metaspace_master.key")
+if os.path.exists(key_path):
+    if SecureBridge.initialize(key_path):
+        print("[APP] [OK] Secure Bridge initialized successfully!")
+    else:
+        print("[APP] [WARNING] Secure Bridge initialization failed (non-critical, continuing without encrypted modules)")
+else:
+    print(f"[APP] [WARNING] Master key not found at {key_path} (non-critical, continuing without encrypted modules)")
 
 # --- ENGINE INICIALIZÁLÁS ---
 simulator = SimulationEngine() if 'SimulationEngine' in globals() else None
@@ -68,10 +82,17 @@ def run_simulation():
         return jsonify({"status": "error", "message": "Simulator core offline."}), 500
     try:
         data = request.json
-        sim_id = simulator.run(data.get('scenario', 'nominal'), int(data.get('duration', 60)))
+        # Opcionális auto_validate flag (alapértelmezett: False - backward compatible)
+        auto_validate = data.get('auto_validate', False)
+        sim_id = simulator.run(
+            data.get('scenario', 'nominal'), 
+            int(data.get('duration', 60)),
+            auto_validate=auto_validate
+        )
         results = simulator.get_results(sim_id)
         return jsonify({"status": "success", "sim_id": sim_id, "data": results})
     except Exception as e:
+        traceback.print_exc()
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/v3/config', methods=['POST'])
@@ -83,6 +104,28 @@ def v3_config_api():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route('/api/v3/validation/report/latest', methods=['GET'])
+def get_latest_v3_validation_report():
+    """Legutóbbi V3 validációs jelentés letöltése"""
+    try:
+        report = v3_network.get_latest_validation_report()
+        if report:
+            return jsonify({
+                "status": "success",
+                "report": report
+            })
+        else:
+            return jsonify({
+                "status": "error",
+                "message": "No validation report available yet"
+            }), 404
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return jsonify({
@@ -90,6 +133,82 @@ def health_check():
         "v3_active": v3_network is not None,
         "v2_active": simulator is not None
     })
+
+# --- VALIDÁCIÓS API ---
+@app.route('/api/validation/run', methods=['POST'])
+def run_validation():
+    """Futtatja a validációs teszteket és generál jegyzőkönyvet"""
+    try:
+        from backend.modules.validation_runner import run_validation
+        report = run_validation()
+        return jsonify({
+            "status": "success",
+            "report": report
+        })
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+@app.route('/api/validation/reports', methods=['GET'])
+def list_validation_reports():
+    """Listázza a validációs jegyzőkönyveket"""
+    try:
+        import glob
+        reports_dir = os.path.join(base_dir, "validation_reports")
+        if not os.path.exists(reports_dir):
+            return jsonify({"status": "success", "reports": []})
+        
+        reports = []
+        for report_file in glob.glob(os.path.join(reports_dir, "validation_report_*.json")):
+            filename = os.path.basename(report_file)
+            mtime = os.path.getmtime(report_file)
+            reports.append({
+                "filename": filename,
+                "path": report_file,
+                "modified": datetime.fromtimestamp(mtime).isoformat()
+            })
+        
+        # Legfrissebb előre
+        reports.sort(key=lambda x: x['modified'], reverse=True)
+        
+        return jsonify({
+            "status": "success",
+            "reports": reports
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+@app.route('/api/validation/reports/<filename>', methods=['GET'])
+def get_validation_report(filename):
+    """Visszaadja egy validációs jegyzőkönyv tartalmát"""
+    try:
+        reports_dir = os.path.join(base_dir, "validation_reports")
+        report_path = os.path.join(reports_dir, filename)
+        
+        if not os.path.exists(report_path):
+            return jsonify({
+                "status": "error",
+                "message": "Report not found"
+            }), 404
+        
+        with open(report_path, 'r', encoding='utf-8') as f:
+            report = json.load(f)
+        
+        return jsonify({
+            "status": "success",
+            "report": report
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

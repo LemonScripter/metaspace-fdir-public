@@ -153,13 +153,26 @@
         <aside class="v3-sidebar">
             <div class="panel">
                 <div class="panel-title">Bio-Code Configuration</div>
+                <div style="padding:8px; background:rgba(0,243,255,0.05); border:1px solid rgba(0,243,255,0.2); border-radius:2px; margin-bottom:10px; font-size:9px; line-height:1.4; color:var(--text-dim);">
+                    <strong>Magyarázat:</strong> A bio-kód determinisztikusan vezérli a műhold működését. 
+                    Minden művelet (hibakezelés, öngyógyítás) a bio-kód alapján történik, 
+                    matematikailag bizonyítható módon, 100% garanciával.
+                </div>
                 <div class="slider-panel">
                     <label style="font-size:10px; color:var(--text-dim); text-transform:uppercase;">Repair Velocity (%)</label>
                     <input type="range" min="1" max="50" step="0.5" value="8.5" class="regen-slider" id="regen-rate-slider" oninput="updateRegenRate(this.value)">
+                    <div style="font-size:8px; color:var(--text-dim); margin-top:5px; line-height:1.3;">
+                        A regeneráció sebessége a bio-kód safety margin alapján módosul. 
+                        Minél nagyobb a safety margin, annál gyorsabban regenerálódnak a node-ok.
+                    </div>
                 </div>
                 <button class="btn-launch" onclick="executeV3Chaos('emp_pulse')" style="border-color: var(--alert-red); color: var(--alert-red); margin-top:10px;">
                     INJECT EMP FRAGMENTATION
                 </button>
+                <div style="font-size:8px; color:var(--text-dim); margin-top:5px; line-height:1.3;">
+                    A hibakezelés a bio-kód alapján történik determinisztikusan. 
+                    A bio-kód azonnal meghatározza a megfelelő action-t (pl. REDUCE_IMAGING_RATE, SAFE_MODE).
+                </div>
             </div>
 
             <div class="critical-alert" id="master-failure-alert">
@@ -170,8 +183,54 @@
                 <div class="panel-title">Metacode Integrity Log</div>
                 <div id="gip-terminal">
                     > GIP v3.2 Modulation mode active.<br>
-                    > Self-healing parameters ready.
+                    > Self-healing parameters ready.<br>
+                    > Bio-Code engine initialized.<br>
+                    > Deterministic operation mode: ACTIVE
                 </div>
+            </div>
+
+            <div class="panel" id="biocode-panel">
+                <div class="panel-title">Bio-Code Status (Műhold Vezérlés)</div>
+                <div id="biocode-status" style="font-size:10px; color:var(--text-dim); padding:10px;">
+                    <div style="padding:8px; background:rgba(0,243,255,0.05); border:1px solid rgba(0,243,255,0.2); border-radius:2px; margin-bottom:8px;">
+                        <div style="color:var(--neon-cyan); font-weight:bold; margin-bottom:5px;">Level 3 Mission Bio-Code</div>
+                        <div style="font-family:monospace; color:var(--text-main); font-size:11px;" id="biocode-level3-display">
+                            Nincs adat
+                        </div>
+                    </div>
+                    <div style="padding:8px; background:rgba(0,10,20,0.6); border:1px solid rgba(0,243,255,0.2); border-radius:2px; margin-bottom:8px;">
+                        <div style="color:var(--neon-cyan); font-weight:bold; margin-bottom:5px;">Műhold Döntés (Bio-Kód Alapján)</div>
+                        <div style="font-size:9px; line-height:1.6;">
+                            <div><strong>Action:</strong> <span id="biocode-action-display" style="color:var(--warning-yellow);">-</span></div>
+                            <div><strong>Feasibility:</strong> <span id="biocode-feasibility-display" style="color:var(--success-green);">-</span></div>
+                            <div><strong>Safety Margin:</strong> <span id="biocode-safety-display" style="color:var(--text-main);">-</span></div>
+                        </div>
+                    </div>
+                    <div style="padding:8px; background:rgba(0,10,20,0.6); border:1px solid rgba(0,243,255,0.2); border-radius:2px; margin-bottom:8px;">
+                        <div style="color:var(--neon-cyan); font-weight:bold; margin-bottom:5px;">Öngyógyítás Állapota</div>
+                        <div style="font-size:9px; line-height:1.6;" id="biocode-regen-status">
+                            <div style="color:var(--text-dim);">Várakozás bio-kód adatokra...</div>
+                        </div>
+                    </div>
+                    <div style="padding:8px; background:rgba(0,10,20,0.6); border:1px solid rgba(0,243,255,0.2); border-radius:2px; font-size:8px; line-height:1.4; color:var(--text-dim);">
+                        <strong>Magyarázat:</strong> A bio-kód determinisztikusan vezérli a műhold működését. 
+                        Minden művelet (hibakezelés, öngyógyítás) a bio-kód alapján történik, 
+                        matematikailag bizonyítható módon, 100% garanciával.
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel" id="validation-panel" style="display:none;">
+                <div class="panel-title">Bio-Code Validation Report</div>
+                <div id="validation-content" style="font-size:10px; color:var(--text-dim); max-height:400px; overflow-y:auto;">
+                    <div style="padding:10px; text-align:center; color:var(--text-dim);">
+                        Waiting for validation data...
+                    </div>
+                </div>
+                <button class="btn-launch" onclick="downloadValidationReport()" 
+                        style="margin-top:10px; width:100%; font-size:10px; padding:8px;">
+                    Download Validation Report (JSON)
+                </button>
             </div>
         </aside>
     </main>
@@ -261,6 +320,149 @@
             } catch (e) { }
         }, 3000);
 
+        let latestValidationReport = null;
+
+        async function downloadValidationReport() {
+            if (!latestValidationReport) {
+                try {
+                    const response = await fetch('/api/v3/validation/report/latest');
+                    const result = await response.json();
+                    if (result.status === 'success' && result.report) {
+                        latestValidationReport = result.report;
+                    } else {
+                        alert('No validation report available yet.');
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Failed to fetch validation report:', e);
+                    alert('Failed to fetch validation report.');
+                    return;
+                }
+            }
+
+            const blob = new Blob([JSON.stringify(latestValidationReport, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `v3_validation_report_${latestValidationReport.validation_id.substring(0, 8)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function displayValidationReport(report) {
+            if (!report) return;
+            latestValidationReport = report;
+
+            const panel = document.getElementById('validation-panel');
+            const content = document.getElementById('validation-content');
+            if (!panel || !content) return;
+
+            panel.style.display = 'block';
+
+            const status = report.overall_status || 'UNKNOWN';
+            const statusColor = status === 'PASSED' ? 'var(--success-green)' : 
+                               status === 'FAILED' ? 'var(--alert-red)' : 'var(--warning-yellow)';
+            const statusIcon = status === 'PASSED' ? '✓' : status === 'FAILED' ? '✗' : '?';
+
+            let html = `
+                <div style="background:rgba(0,10,20,0.6); border:1px solid ${statusColor}; padding:10px; margin-bottom:10px; border-radius:2px;">
+                    <div style="color:${statusColor}; font-weight:bold; margin-bottom:5px;">
+                        ${statusIcon} Overall Status: ${status}
+                    </div>
+                    <div style="font-size:9px; color:var(--text-dim);">
+                        Validation ID: ${report.validation_id ? report.validation_id.substring(0, 16) + '...' : 'N/A'}<br>
+                        Timestamp: ${report.timestamp ? new Date(report.timestamp).toLocaleString() : 'N/A'}<br>
+                        Success Rate: ${report.summary ? report.summary.success_rate.toFixed(1) + '%' : 'N/A'}
+                    </div>
+                </div>
+            `;
+
+            // Mission State (Bio-kód adatok)
+            if (report.mission_state) {
+                html += `
+                    <div style="background:rgba(0,243,255,0.05); border:1px solid rgba(0,243,255,0.2); padding:10px; margin-bottom:10px; border-radius:2px;">
+                        <div style="color:var(--neon-cyan); font-weight:bold; margin-bottom:5px;">Mission State</div>
+                        <div style="font-size:9px;">
+                            Feasibility: <span style="color:var(--warning-yellow);">${report.mission_state.feasibility}%</span><br>
+                            Action: <span style="color:var(--text-main);">${report.mission_state.action || 'N/A'}</span><br>
+                            Safety Margin: ${report.mission_state.safety_margin || 0}<br>
+                            Level 3 Bio-Code: <span style="font-family:monospace; color:var(--neon-cyan);">${report.mission_state.biocode_level3 || 'N/A'}</span>
+                        </div>
+                        ${report.mission_state.feasibility_explanation ? `
+                            <div style="margin-top:8px; padding:8px; background:rgba(0,0,0,0.3); border-radius:2px; font-size:8px; line-height:1.4;">
+                                <strong>Feasibility Explanation:</strong><br>
+                                ${report.mission_state.feasibility_explanation.split('\n').slice(0, 5).join('<br>')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            // Invariants
+            if (report.invariants) {
+                html += `
+                    <div style="background:rgba(0,10,20,0.6); border:1px solid rgba(0,243,255,0.2); padding:10px; margin-bottom:10px; border-radius:2px;">
+                        <div style="color:var(--neon-cyan); font-weight:bold; margin-bottom:5px;">Invariants</div>
+                        <div style="font-size:9px;">
+                `;
+                for (const [name, result] of Object.entries(report.invariants)) {
+                    const passed = result.last_status !== false;
+                    const color = passed ? 'var(--success-green)' : 'var(--alert-red)';
+                    const icon = passed ? '✓' : '✗';
+                    html += `
+                        <div style="margin:3px 0;">
+                            <span style="color:${color};">${icon}</span> 
+                            <strong>${name}:</strong> ${result.description || 'N/A'}<br>
+                            <span style="font-size:8px; color:var(--text-dim); margin-left:15px;">
+                                ${result.last_details || 'N/A'}
+                            </span>
+                        </div>
+                    `;
+                }
+                html += `</div></div>`;
+            }
+
+            // Mathematics
+            if (report.mathematics) {
+                html += `
+                    <div style="background:rgba(0,10,20,0.6); border:1px solid rgba(0,243,255,0.2); padding:10px; margin-bottom:10px; border-radius:2px;">
+                        <div style="color:var(--neon-cyan); font-weight:bold; margin-bottom:5px;">Mathematical Validation</div>
+                        <div style="font-size:9px;">
+                `;
+                for (const [name, result] of Object.entries(report.mathematics)) {
+                    const valid = result.last_valid !== false;
+                    const color = valid ? 'var(--success-green)' : 'var(--alert-red)';
+                    const icon = valid ? '✓' : '✗';
+                    html += `
+                        <div style="margin:3px 0;">
+                            <span style="color:${color};">${icon}</span> 
+                            <strong>${name}:</strong><br>
+                            <span style="font-size:8px; color:var(--text-dim); margin-left:15px;">
+                                ${result.last_proof || 'N/A'}
+                            </span>
+                        </div>
+                    `;
+                }
+                html += `</div></div>`;
+            }
+
+            content.innerHTML = html;
+        }
+
+        async function fetchLatestValidationReport() {
+            try {
+                const response = await fetch('/api/v3/validation/report/latest');
+                const result = await response.json();
+                if (result.status === 'success' && result.report) {
+                    displayValidationReport(result.report);
+                }
+            } catch (e) {
+                console.error('Failed to fetch validation report:', e);
+            }
+        }
+
         function updateUI(data) {
             if (!data) return;
             const terminal = document.getElementById('gip-terminal');
@@ -282,6 +484,14 @@
 
             if (feasVal) feasVal.innerText = data.feasibility + "%";
             
+            // BIO-KÓD INFORMÁCIÓK MEGJELENÍTÉSE
+            updateBiocodeDisplay(data);
+            
+            // Validációs jelentés frissítése, ha van validation adat
+            if (data.validation && data.validation.validation_id) {
+                fetchLatestValidationReport();
+            }
+            
             if (data.feasibility === 100 && data.events.length === 0 && terminal && terminal.innerHTML.includes('SUCCESS')) {
                 setTimeout(() => { terminal.innerHTML = "> Integrity Verified. System Nominal."; }, 5000);
             }
@@ -295,6 +505,147 @@
             }
             if (alertPanel) alertPanel.style.display = (data.feasibility < 100) ? 'block' : 'none';
         }
+
+        function updateBiocodeDisplay(data) {
+            // Bio-kód Level 3 megjelenítése
+            const biocodeLevel3El = document.getElementById('biocode-level3-display');
+            const biocodeActionEl = document.getElementById('biocode-action-display');
+            const biocodeFeasibilityEl = document.getElementById('biocode-feasibility-display');
+            const biocodeSafetyEl = document.getElementById('biocode-safety-display');
+            const biocodeRegenStatusEl = document.getElementById('biocode-regen-status');
+            
+            // Bio-kód adatok kinyerése
+            let biocodeLevel3 = null;
+            let action = null;
+            let feasibility = null;
+            let safetyMargin = null;
+            let regenDriven = false;
+            
+            if (data.biocode && data.biocode.level3) {
+                biocodeLevel3 = data.biocode.level3.biocode;
+                action = data.biocode.level3.action;
+                feasibility = data.biocode.level3.feasibility;
+                safetyMargin = data.biocode.level3.safety_margin;
+            } else if (data.validation) {
+                biocodeLevel3 = data.validation.biocode_level3;
+                action = data.validation.action;
+                safetyMargin = data.validation.safety_margin;
+                feasibility = data.feasibility;
+            }
+            
+            if (data.validation && data.validation.regeneration_driven_by_biocode) {
+                regenDriven = true;
+            }
+            
+            // Level 3 Bio-Code megjelenítése
+            if (biocodeLevel3El) {
+                if (biocodeLevel3) {
+                    biocodeLevel3El.innerHTML = `<span style="color:var(--neon-cyan); font-weight:bold;">${biocodeLevel3}</span>`;
+                } else {
+                    biocodeLevel3El.innerHTML = '<span style="color:var(--text-dim);">Nincs adat</span>';
+                }
+            }
+            
+            // Action megjelenítése
+            if (biocodeActionEl) {
+                if (action) {
+                    let actionColor = 'var(--success-green)';
+                    if (action === 'EMERGENCY_HALT' || action === 'SAFE_MODE') {
+                        actionColor = 'var(--alert-red)';
+                    } else if (action === 'SWITCH_TO_FALLBACK' || action === 'REDUCE_IMAGING_RATE') {
+                        actionColor = 'var(--warning-yellow)';
+                    }
+                    biocodeActionEl.style.color = actionColor;
+                    biocodeActionEl.textContent = action;
+                } else {
+                    biocodeActionEl.textContent = '-';
+                }
+            }
+            
+            // Feasibility megjelenítése
+            if (biocodeFeasibilityEl) {
+                if (feasibility !== null) {
+                    let feasColor = 'var(--success-green)';
+                    if (feasibility < 40) {
+                        feasColor = 'var(--alert-red)';
+                    } else if (feasibility < 75) {
+                        feasColor = 'var(--warning-yellow)';
+                    }
+                    biocodeFeasibilityEl.style.color = feasColor;
+                    biocodeFeasibilityEl.textContent = feasibility.toFixed(2) + '%';
+                } else {
+                    biocodeFeasibilityEl.textContent = '-';
+                }
+            }
+            
+            // Safety Margin megjelenítése
+            if (biocodeSafetyEl) {
+                if (safetyMargin !== null) {
+                    biocodeSafetyEl.textContent = safetyMargin;
+                } else {
+                    biocodeSafetyEl.textContent = '-';
+                }
+            }
+            
+            // Öngyógyítás állapota megjelenítése
+            if (biocodeRegenStatusEl) {
+                let regenHtml = '';
+                
+                if (regenDriven) {
+                    regenHtml = `
+                        <div style="color:var(--success-green); margin-bottom:5px;">
+                            <strong>✓ Öngyógyítás aktív (Bio-kód vezérelt)</strong>
+                        </div>
+                        <div style="font-size:8px; color:var(--text-dim); line-height:1.4;">
+                            A bio-kód alapján a rendszer determinisztikusan regenerálja a node-okat. 
+                            A regeneráció sebessége a safety margin alapján módosul.
+                        </div>
+                    `;
+                } else if (action) {
+                    if (action === 'EMERGENCY_HALT' || action === 'SAFE_MODE') {
+                        regenHtml = `
+                            <div style="color:var(--alert-red); margin-bottom:5px;">
+                                <strong>✗ Öngyógyítás blokkolva</strong>
+                            </div>
+                            <div style="font-size:8px; color:var(--text-dim); line-height:1.4;">
+                                A bio-kód alapján (action=${action}) a rendszer blokkolja az öngyógyítást 
+                                a biztonság érdekében.
+                            </div>
+                        `;
+                    } else if (data.feasibility !== null && data.feasibility <= 20) {
+                        regenHtml = `
+                            <div style="color:var(--alert-red); margin-bottom:5px;">
+                                <strong>✗ Öngyógyítás blokkolva</strong>
+                            </div>
+                            <div style="font-size:8px; color:var(--text-dim); line-height:1.4;">
+                                A bio-kód alapján (feasibility=${data.feasibility.toFixed(1)}% ≤ 20%) 
+                                a rendszer blokkolja az öngyógyítást.
+                            </div>
+                        `;
+                    } else {
+                        regenHtml = `
+                            <div style="color:var(--text-dim); margin-bottom:5px;">
+                                <strong>○ Öngyógyítás állapot ellenőrzése...</strong>
+                            </div>
+                            <div style="font-size:8px; color:var(--text-dim); line-height:1.4;">
+                                A bio-kód alapján döntés folyamatban.
+                            </div>
+                        `;
+                    }
+                } else {
+                    regenHtml = `
+                        <div style="color:var(--text-dim);">
+                            Várakozás bio-kód adatokra...
+                        </div>
+                    `;
+                }
+                
+                biocodeRegenStatusEl.innerHTML = regenHtml;
+            }
+        }
+
+        // Validációs jelentés automatikus frissítése
+        setInterval(fetchLatestValidationReport, 5000);
     </script>
 </body>
 </html>

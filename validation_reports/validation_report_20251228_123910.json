@@ -1,0 +1,55 @@
+{
+  "metadata": {
+    "timestamp": "2025-12-28T12:39:10.388981",
+    "version": "1.4",
+    "validation_type": "Full System Validation"
+  },
+  "summary": {
+    "total_tests": 5,
+    "passed": 5,
+    "failed": 0,
+    "success_rate": 100.0,
+    "status": "PASSED"
+  },
+  "unit_tests": {
+    "total": 3,
+    "passed": 3,
+    "failed": 0,
+    "errors": [],
+    "success_rate": 100.0,
+    "failures": [],
+    "errors_list": []
+  },
+  "integration_tests": {
+    "total": 2,
+    "passed": 2,
+    "failed": 0,
+    "success_rate": 100.0,
+    "test_details": [
+      {
+        "name": "MetaSpace Invariáns Ellenőrzések",
+        "status": "PASSED",
+        "details": {
+          "power_health": 0,
+          "gps_health": 0,
+          "imu_health": 0,
+          "mission_feasibility": 0,
+          "anomaly_detected": true
+        }
+      },
+      {
+        "name": "EKF vs MetaSpace Reakcióidő",
+        "status": "PASSED",
+        "details": {
+          "metaspace_detected": true,
+          "metaspace_latency_ms": 50,
+          "ekf_detected": false,
+          "ekf_latency_minutes": 0
+        }
+      }
+    ]
+  },
+  "recommendations": [
+    "✅ Minden teszt sikeres! A rendszer validálva van."
+  ]
+}

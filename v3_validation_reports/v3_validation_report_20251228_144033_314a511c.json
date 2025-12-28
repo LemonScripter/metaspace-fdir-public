@@ -1,0 +1,236 @@
+{
+  "validation_id": "314a511c9f32523dce351f37cd3968db92e3fa83dbbe960668c4b3944a22a8cd",
+  "timestamp": "2025-12-28T14:40:33.020748",
+  "mission_state": {
+    "biocode_level3": "0x000000460000031E",
+    "biocode_level2": {
+      "navigation": "0x02641064",
+      "power": "0x03641064",
+      "comm": "0x04641064"
+    },
+    "biocode_level1": {
+      "CPU": "0x0001400000000000",
+      "ST_A": "0x0002400000000000",
+      "ST_B": "0x0003000000000FFF",
+      "EPS": "0x0004000000000FFF",
+      "ANT": "0x0005000000000FFF",
+      "BATT": "0x0006000000000FFF"
+    },
+    "feasibility": 70.0,
+    "feasibility_explanation": "Sulyozott szamitas: logic(30%)*0.0% + navigation(25%)*100.0% + power(25%)*100.0% + comm(20%)*100.0% = 70.00%\n\nReszletes:\nlogic(30%): 0% [NINCS AKTIV NODE]\nnavigation(25%): 100.0% [Star Tracker B]\npower(25%): 100.0% [Power Controller, Battery Array]\ncomm(20%): 100.0% [High-Gain Antenna]",
+    "action": "REDUCE_IMAGING_RATE",
+    "safety_margin": 30,
+    "active_nodes_count": 4,
+    "total_nodes_count": 6,
+    "biocode_generated": true
+  },
+  "invariants": {
+    "health_bounds": {
+      "description": "∀n: 0 ≤ n.health ≤ 100",
+      "passed_count": 2,
+      "failed_count": 0,
+      "last_status": true,
+      "last_details": "Minden node health-je 0-100 kozott van (OK)"
+    },
+    "master_uniqueness": {
+      "description": "|{n: n.is_master}| ≤ 1",
+      "passed_count": 2,
+      "failed_count": 0,
+      "last_status": true,
+      "last_details": "Master uniqueness OK: 1 master node (OK)"
+    },
+    "power_dependency": {
+      "description": "regen_active → ∃n: 'power' ∈ n.capabilities",
+      "passed_count": 2,
+      "failed_count": 0,
+      "last_status": true,
+      "last_details": "Power dependency OK: van aktiv power capability (OK)"
+    },
+    "feasibility_bounds": {
+      "description": "0 ≤ feasibility ≤ 100",
+      "passed_count": 2,
+      "failed_count": 0,
+      "last_status": true,
+      "last_details": "Feasibility bounds OK: 62.20%"
+    },
+    "regen_monotonicity": {
+      "description": "regen → health_new ≥ health_old",
+      "passed_count": 2,
+      "failed_count": 0,
+      "last_status": true,
+      "last_details": "Regen monotonicity OK: minden node health-je nem csokken (OK)"
+    },
+    "biocode_consistency": {
+      "description": "decode(encode(state)) == state",
+      "passed_count": 2,
+      "failed_count": 0,
+      "last_status": true,
+      "last_details": "Bio-code consistency OK: encoding/decoding konzisztens (expected=70.00%, decoded=70%, diff=0.00%)"
+    }
+  },
+  "mathematics": {
+    "feasibility_formula": {
+      "valid_count": 2,
+      "invalid_count": 0,
+      "last_valid": true,
+      "last_proof": "Feasibility = 62.20%, 0 ≤ 62.20 ≤ 100 ✓"
+    },
+    "biocode_encoding": {
+      "valid_count": 1,
+      "invalid_count": 0,
+      "last_valid": true,
+      "last_proof": "Level 3 bio-code encoding/decoding konzisztens: expected=70.00%, decoded=70%, diff=0.00% (tolerance: 1%) ✓"
+    }
+  },
+  "operations_log": [
+    {
+      "operation": "chaos_injection",
+      "timestamp": "2025-12-28T14:40:32.998702",
+      "validated": true,
+      "feasibility": 70.0,
+      "node_states": [
+        {
+          "id": "CPU",
+          "name": "Main CPU Core",
+          "health": 0.0,
+          "is_master": false,
+          "capabilities": [
+            "logic",
+            "storage"
+          ],
+          "status": "DEAD"
+        },
+        {
+          "id": "ST_A",
+          "name": "Star Tracker A",
+          "health": 0.0,
+          "is_master": false,
+          "capabilities": [
+            "navigation"
+          ],
+          "status": "DEAD"
+        },
+        {
+          "id": "ST_B",
+          "name": "Star Tracker B",
+          "health": 100.0,
+          "is_master": true,
+          "capabilities": [
+            "navigation"
+          ],
+          "status": "OPERATIONAL"
+        },
+        {
+          "id": "EPS",
+          "name": "Power Controller",
+          "health": 100.0,
+          "is_master": false,
+          "capabilities": [
+            "power"
+          ],
+          "status": "OPERATIONAL"
+        },
+        {
+          "id": "ANT",
+          "name": "High-Gain Antenna",
+          "health": 100.0,
+          "is_master": false,
+          "capabilities": [
+            "comm"
+          ],
+          "status": "OPERATIONAL"
+        },
+        {
+          "id": "BATT",
+          "name": "Battery Array",
+          "health": 100.0,
+          "is_master": false,
+          "capabilities": [
+            "power"
+          ],
+          "status": "OPERATIONAL"
+        }
+      ],
+      "validation_status": "PASSED",
+      "biocode_level3": "0x000000460000031E"
+    },
+    {
+      "operation": "regeneration",
+      "timestamp": "2025-12-28T14:40:33.020748",
+      "validated": true,
+      "feasibility": 62.2,
+      "node_states": [
+        {
+          "id": "CPU",
+          "name": "Main CPU Core",
+          "health": 11.05,
+          "is_master": false,
+          "capabilities": [
+            "logic",
+            "storage"
+          ],
+          "status": "HEALING"
+        },
+        {
+          "id": "ST_A",
+          "name": "Star Tracker A",
+          "health": 11.05,
+          "is_master": false,
+          "capabilities": [
+            "navigation"
+          ],
+          "status": "HEALING"
+        },
+        {
+          "id": "ST_B",
+          "name": "Star Tracker B",
+          "health": 100.0,
+          "is_master": true,
+          "capabilities": [
+            "navigation"
+          ],
+          "status": "OPERATIONAL"
+        },
+        {
+          "id": "EPS",
+          "name": "Power Controller",
+          "health": 100.0,
+          "is_master": false,
+          "capabilities": [
+            "power"
+          ],
+          "status": "OPERATIONAL"
+        },
+        {
+          "id": "ANT",
+          "name": "High-Gain Antenna",
+          "health": 100.0,
+          "is_master": false,
+          "capabilities": [
+            "comm"
+          ],
+          "status": "OPERATIONAL"
+        },
+        {
+          "id": "BATT",
+          "name": "Battery Array",
+          "health": 100.0,
+          "is_master": false,
+          "capabilities": [
+            "power"
+          ],
+          "status": "OPERATIONAL"
+        }
+      ],
+      "validation_status": "PASSED",
+      "biocode_level3": "0x000000460000031E"
+    }
+  ],
+  "overall_status": "PASSED",
+  "summary": {
+    "total_operations": 2,
+    "passed_operations": 2,
+    "failed_operations": 0,
+    "success_rate": 100.0
+  }
+}

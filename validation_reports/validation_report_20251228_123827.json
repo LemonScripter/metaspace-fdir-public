@@ -1,0 +1,51 @@
+{
+  "metadata": {
+    "timestamp": "2025-12-28T12:38:27.373245",
+    "version": "1.4",
+    "validation_type": "Full System Validation"
+  },
+  "summary": {
+    "total_tests": 5,
+    "passed": 4,
+    "failed": 1,
+    "success_rate": 80.0,
+    "status": "FAILED"
+  },
+  "unit_tests": {
+    "total": 3,
+    "passed": 3,
+    "failed": 0,
+    "errors": [],
+    "success_rate": 100.0,
+    "failures": [],
+    "errors_list": []
+  },
+  "integration_tests": {
+    "total": 2,
+    "passed": 1,
+    "failed": 1,
+    "success_rate": 50.0,
+    "test_details": [
+      {
+        "name": "MetaSpace Invariáns Ellenőrzések",
+        "status": "PASSED",
+        "details": {
+          "power_health": 0,
+          "gps_health": 0,
+          "imu_health": 0,
+          "mission_feasibility": 0,
+          "anomaly_detected": true
+        }
+      },
+      {
+        "name": "EKF vs MetaSpace Reakcióidő",
+        "status": "ERROR",
+        "error": "'Landsat9Model' object has no attribute 'get_gps_measurement'"
+      }
+    ]
+  },
+  "recommendations": [
+    "⚠️ 1 integrációs teszt sikertelen. Rendszer szintű ellenőrzés szükséges.",
+    "⚠️ Integrációs teszt lefedettség nem 100%. További tesztek hozzáadása ajánlott."
+  ]
+}
