@@ -70,8 +70,27 @@ function runSimulation() {
         })
     })
     .then(response => {
-        if (!response.ok) throw new Error('Server returned ' + response.status);
+        console.log("[API] Response status:", response.status);
+        if (!response.ok) {
+            return response.json().then(err => {
+                console.error("[API] Server error:", err);
+                throw new Error(err.message || 'Server returned ' + response.status);
+            });
+        }
         return response.json();
+    })
+    .catch(error => {
+        console.error("[System] Mapping Error:", error);
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = 'EXECUTE SIMULATION';
+        }
+        if (liveStatus) {
+            liveStatus.innerText = "ERROR";
+            liveStatus.style.color = "#ff2a2a";
+        }
+        alert('Simulation failed: ' + error.message + '\n\nCheck the browser console and server logs for details.');
+        throw error;
     })
     .then(data => {
         if (data.status === 'success') {
@@ -278,7 +297,15 @@ function renderChart(results, scenario) {
                     },
                     x: { 
                         grid: { display: false }, 
-                        ticks: { maxTicksLimit: 12, color: '#666' },
+                        ticks: { 
+                            maxTicksLimit: 12, 
+                            color: '#666',
+                            stepSize: 1,
+                            callback: function(value) {
+                                // Egész számok (napok) - tizedesek nélkül
+                                return Math.round(value);
+                            }
+                        },
                         title: {
                             display: true,
                             text: 'Time (days)',
@@ -321,7 +348,8 @@ function renderChart(results, scenario) {
                         padding: 12,
                         callbacks: {
                             title: function(context) {
-                                return `Time: ${parseFloat(context[0].label).toFixed(2)} days`;
+                                // Egész számok (napok) - tizedesek nélkül
+                                return `Time: ${Math.round(parseFloat(context[0].label))} days`;
                             },
                             label: function(context) {
                                 const label = context.dataset.label || '';

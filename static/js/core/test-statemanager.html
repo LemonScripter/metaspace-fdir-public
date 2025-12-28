@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StateManager Teszt</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #000;
+            color: #0f0;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #0f0;
+        }
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0ff;
+        }
+        #output {
+            background: #111;
+            padding: 10px;
+            margin-top: 10px;
+            min-height: 100px;
+            border: 1px solid #0f0;
+        }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+    </style>
+</head>
+<body>
+    <h1>StateManager Teszt</h1>
+    
+    <div class="test-section">
+        <h2>1. Alapvető setState/getState teszt</h2>
+        <button onclick="testBasic()">Alapvető teszt</button>
+        <div id="output1"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Subscribe/Unsubscribe teszt</h2>
+        <button onclick="testSubscribe()">Subscribe teszt</button>
+        <div id="output2"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Multiple states teszt</h2>
+        <button onclick="testMultiple()">Multiple states teszt</button>
+        <div id="output3"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. EventBus integráció teszt</h2>
+        <button onclick="testEventBus()">EventBus integráció</button>
+        <div id="output4"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. History teszt</h2>
+        <button onclick="testHistory()">History teszt</button>
+        <div id="output5"></div>
+    </div>
+    
+    <script type="module">
+        import stateManager from './StateManager.js';
+        import eventBus from './EventBus.js';
+        
+        window.stateManager = stateManager;
+        window.eventBus = eventBus;
+        
+        window.testBasic = function() {
+            const output = document.getElementById('output1');
+            output.innerHTML = '';
+            
+            // Állapot beállítása
+            stateManager.setState('test:value', 42);
+            stateManager.setState('test:string', 'Hello');
+            stateManager.setState('test:object', { a: 1, b: 2 });
+            
+            // Állapot lekérése
+            const value = stateManager.getState('test:value');
+            const str = stateManager.getState('test:string');
+            const obj = stateManager.getState('test:object');
+            const missing = stateManager.getState('test:missing', 'DEFAULT');
+            
+            output.innerHTML += `<span class="success">✓</span> test:value = ${value} (should be 42)<br>`;
+            output.innerHTML += `<span class="success">✓</span> test:string = ${str} (should be Hello)<br>`;
+            output.innerHTML += `<span class="success">✓</span> test:object = ${JSON.stringify(obj)}<br>`;
+            output.innerHTML += `<span class="success">✓</span> test:missing = ${missing} (should be DEFAULT)<br>`;
+            
+            // Összes állapot
+            const all = stateManager.getAllState();
+            output.innerHTML += `<br>All states: ${JSON.stringify(all)}<br>`;
+        };
+        
+        window.testSubscribe = function() {
+            const output = document.getElementById('output2');
+            output.innerHTML = '';
+            
+            let callCount = 0;
+            let lastValue = null;
+            let lastOldValue = null;
+            
+            // Subscribe
+            const callback = (newValue, oldValue) => {
+                callCount++;
+                lastValue = newValue;
+                lastOldValue = oldValue;
+                output.innerHTML += `[${callCount}] Changed: ${oldValue} → ${newValue}<br>`;
+            };
+            
+            const unsubscribe = stateManager.subscribe('test:subscribe', callback);
+            
+            // Állapot változtatások
+            stateManager.setState('test:subscribe', 1);
+            stateManager.setState('test:subscribe', 2);
+            stateManager.setState('test:subscribe', 3);
+            
+            output.innerHTML += `<br>--- Unsubscribed ---<br><br>`;
+            unsubscribe();
+            
+            // További változtatások (nem kellene meghívódnia)
+            stateManager.setState('test:subscribe', 4);
+            stateManager.setState('test:subscribe', 5);
+            
+            output.innerHTML += `<br>Total calls: ${callCount} (should be 3)<br>`;
+            output.innerHTML += `Last value: ${lastValue} (should be 3)<br>`;
+        };
+        
+        window.testMultiple = function() {
+            const output = document.getElementById('output3');
+            output.innerHTML = '';
+            
+            let callCountA = 0;
+            let callCountB = 0;
+            
+            // Két különböző kulcs subscribe
+            stateManager.subscribe('test:multiA', (newVal) => {
+                callCountA++;
+                output.innerHTML += `[A] Changed to: ${newVal}<br>`;
+            });
+            
+            stateManager.subscribe('test:multiB', (newVal) => {
+                callCountB++;
+                output.innerHTML += `[B] Changed to: ${newVal}<br>`;
+            });
+            
+            // Több állapot egyszerre
+            stateManager.setMultipleStates({
+                'test:multiA': 10,
+                'test:multiB': 20,
+                'test:multiC': 30
+            });
+            
+            output.innerHTML += `<br>Call count A: ${callCountA} (should be 1)<br>`;
+            output.innerHTML += `Call count B: ${callCountB} (should be 1)<br>`;
+            
+            // Értékek ellenőrzése
+            const a = stateManager.getState('test:multiA');
+            const b = stateManager.getState('test:multiB');
+            const c = stateManager.getState('test:multiC');
+            
+            output.innerHTML += `Values: A=${a}, B=${b}, C=${c}<br>`;
+        };
+        
+        window.testEventBus = function() {
+            const output = document.getElementById('output4');
+            output.innerHTML = '';
+            
+            let eventCount = 0;
+            let specificEventCount = 0;
+            
+            // EventBus listener-ek
+            eventBus.on('state:changed', ({ key, value, oldValue }) => {
+                eventCount++;
+                output.innerHTML += `[EventBus] Global: ${key} = ${oldValue} → ${value}<br>`;
+            });
+            
+            eventBus.on('state:changed:test:eventbus', ({ value, oldValue }) => {
+                specificEventCount++;
+                output.innerHTML += `[EventBus] Specific: ${oldValue} → ${value}<br>`;
+            });
+            
+            // Állapot változtatások
+            stateManager.setState('test:eventbus', 1);
+            stateManager.setState('test:eventbus', 2);
+            stateManager.setState('test:other', 100); // Ez csak a globális eseményt kellene kiváltania
+            
+            output.innerHTML += `<br>Global events: ${eventCount} (should be 3)<br>`;
+            output.innerHTML += `Specific events: ${specificEventCount} (should be 2)<br>`;
+        };
+        
+        window.testHistory = function() {
+            const output = document.getElementById('output5');
+            output.innerHTML = '';
+            
+            // Több változtatás
+            stateManager.setState('test:history', 1);
+            stateManager.setState('test:history', 2);
+            stateManager.setState('test:history', 3);
+            stateManager.setState('test:history', 4);
+            stateManager.setState('test:history', 5);
+            
+            // Történet lekérése
+            const history = stateManager.getHistory('test:history');
+            
+            output.innerHTML += `History length: ${history.length} (should be 5)<br><br>`;
+            output.innerHTML += 'History entries:<br>';
+            history.forEach((entry, index) => {
+                const time = new Date(entry.timestamp).toLocaleTimeString();
+                output.innerHTML += `[${index + 1}] ${entry.oldValue} → ${entry.value} at ${time}<br>`;
+            });
+        };
+    </script>
+</body>
+</html>
+

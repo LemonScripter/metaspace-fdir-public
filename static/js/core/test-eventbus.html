@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventBus Teszt</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #000;
+            color: #0f0;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #0f0;
+        }
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0ff;
+        }
+        #output {
+            background: #111;
+            padding: 10px;
+            margin-top: 10px;
+            min-height: 100px;
+            border: 1px solid #0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>EventBus Teszt</h1>
+    
+    <div class="test-section">
+        <h2>1. Alapvető Pub/Sub teszt</h2>
+        <button onclick="testBasic()">Alapvető teszt</button>
+        <div id="output1"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Unsubscribe teszt</h2>
+        <button onclick="testUnsubscribe()">Unsubscribe teszt</button>
+        <div id="output2"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Wildcard listener teszt</h2>
+        <button onclick="testWildcard()">Wildcard teszt</button>
+        <div id="output3"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Eseménytörténet teszt</h2>
+        <button onclick="testHistory()">Történet teszt</button>
+        <div id="output4"></div>
+    </div>
+    
+    <script type="module">
+        import eventBus from './EventBus.js';
+        
+        window.eventBus = eventBus;
+        
+        window.testBasic = function() {
+            const output = document.getElementById('output1');
+            output.innerHTML = '';
+            
+            let callCount = 0;
+            
+            // Listener hozzáadása
+            eventBus.on('test:basic', (data) => {
+                callCount++;
+                output.innerHTML += `[${callCount}] Event received: ${JSON.stringify(data)}<br>`;
+            });
+            
+            // Események küldése
+            eventBus.emit('test:basic', { message: 'Hello' });
+            eventBus.emit('test:basic', { message: 'World' });
+            
+            output.innerHTML += `<br>Total calls: ${callCount}<br>`;
+        };
+        
+        window.testUnsubscribe = function() {
+            const output = document.getElementById('output2');
+            output.innerHTML = '';
+            
+            let callCount = 0;
+            
+            // Listener hozzáadása
+            const callback = (data) => {
+                callCount++;
+                output.innerHTML += `[${callCount}] Event received: ${JSON.stringify(data)}<br>`;
+            };
+            
+            const unsubscribe = eventBus.on('test:unsubscribe', callback);
+            
+            // Első esemény
+            eventBus.emit('test:unsubscribe', { message: 'Before unsubscribe' });
+            
+            // Unsubscribe
+            unsubscribe();
+            output.innerHTML += '<br>--- Unsubscribed ---<br><br>';
+            
+            // Második esemény (nem kellene meghívódnia)
+            eventBus.emit('test:unsubscribe', { message: 'After unsubscribe' });
+            
+            output.innerHTML += `<br>Total calls: ${callCount} (should be 1)<br>`;
+        };
+        
+        window.testWildcard = function() {
+            const output = document.getElementById('output3');
+            output.innerHTML = '';
+            
+            let callCount = 0;
+            
+            // Wildcard listener
+            eventBus.on('*', ({ event, data }) => {
+                callCount++;
+                output.innerHTML += `[${callCount}] Wildcard caught: ${event} - ${JSON.stringify(data)}<br>`;
+            });
+            
+            // Különböző események
+            eventBus.emit('test:event1', { data: 1 });
+            eventBus.emit('test:event2', { data: 2 });
+            eventBus.emit('test:event3', { data: 3 });
+            
+            output.innerHTML += `<br>Total wildcard calls: ${callCount} (should be 3)<br>`;
+        };
+        
+        window.testHistory = function() {
+            const output = document.getElementById('output4');
+            output.innerHTML = '';
+            
+            // Események küldése
+            eventBus.emit('test:history1', { data: 1 });
+            eventBus.emit('test:history2', { data: 2 });
+            eventBus.emit('test:history3', { data: 3 });
+            
+            // Történet lekérése
+            const history = eventBus.getHistory();
+            
+            output.innerHTML += `History length: ${history.length}<br>`;
+            output.innerHTML += `Listener counts: ${JSON.stringify(eventBus.getListenerCounts())}<br><br>`;
+            
+            output.innerHTML += 'Last 5 events:<br>';
+            history.slice(-5).forEach((entry, index) => {
+                output.innerHTML += `[${index + 1}] ${entry.event} at ${new Date(entry.timestamp).toLocaleTimeString()}<br>`;
+            });
+        };
+    </script>
+</body>
+</html>
+

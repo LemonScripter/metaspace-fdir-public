@@ -53,6 +53,9 @@ class SimulationEngine:
         satellite._gps_antenna_failed = False  # GPS antenna hiba flag
         satellite._gps_error_accumulated = 0.0  # GPS hiba akkumuláció (GPS antenna hiba esetén)
         
+        # Fontos: A MetaSpace-nek azonnal látnia kell a GPS hibát, ha aktív
+        # Ezért inicializáljuk a _gps_error_accumulated-et, hogy az első lépésben is működjön
+        
         # Az EKFSimulator ezt a metódust hívja az update-ben
         # REÁLIS VISELKEDÉS:
         # - GPS antenna hiba: rossz adat (nagy eltolódás)
@@ -136,25 +139,25 @@ class SimulationEngine:
             base_gps_error = 100.0 - telemetry.get('attitude_integrity', 100.0)
             
             # GPS antenna hiba: Az EKF rossz adatot kap, lassan reagál, közben fölösleges fotók készülnek
+            # A MetaSpace azonnal észleli (invariáns megsértés) -> SAFE_MODE, leállítja a szenzorokat
             if active_failure == 'gps_antenna':
                 # GPS antenna hiba -> azonnal nagy GPS hiba (rossz adat)
-                # Az EKF lassan reagál (heurisztikusan, valószínűségszámítással)
-                # Közben tovább gyűjt adatot (fölösleges/költséges fotók)
-                
                 # Jelöljük, hogy GPS antenna hiba van (rossz adat érkezik)
                 satellite._gps_antenna_failed = True
                 
                 # GPS antenna hiba: azonnal nagy GPS hiba (rossz adat)
-                # Az attitude_integrity nem változik, de a GPS hiba igen
-                # Szimuláljuk, hogy a GPS antenna hiba hatással van a navigációra
-                # Az EKF rossz GPS adatot kap, és lassan reagál (heurisztikusan próbálja visszaterelni)
+                # KRITIKUS: A MetaSpace azonnal észleli, ha gps_error > 50.0
+                # Ezért azonnal beállítjuk 60.0-ra, hogy a MetaSpace azonnal reagáljon
                 if not hasattr(satellite, '_gps_error_accumulated'):
                     satellite._gps_error_accumulated = 0.0
                 
-                # Fokozatosan növeljük a GPS hibát (lassú EKF reakció szimulálása)
-                # Az EKF heurisztikusan próbálja visszaterelni a műholdat
+                # GPS antenna hiba: azonnal nagy GPS hiba (rossz adat)
+                # A MetaSpace invariáns megsértést észlel -> azonnal SAFE_MODE, leállítja a szenzorokat
+                # Az EKF lassan reagál (heurisztikusan próbálja visszaterelni)
                 satellite._gps_error_accumulated += 1.0
-                satellite.gps_error = min(100.0, 60.0 + satellite._gps_error_accumulated)
+                # Azonnal 60.0+ hiba, hogy a MetaSpace azonnal észlelje (> 50.0 küszöb)
+                # Fontos: Az első lépésben is 60.0+ legyen, hogy a MetaSpace azonnal reagáljon
+                satellite.gps_error = max(60.0, min(100.0, 60.0 + satellite._gps_error_accumulated))
             
             # IMU drift szimuláció
             if active_failure == 'imu_drift':
@@ -397,6 +400,7 @@ class SimulationEngine:
             'Solar_Left_Wing': 'Bal oldali napelem szárny. Napenergiát alakít át elektromos energiává az akkumulátor töltéséhez.',
             'Solar_Right_Wing': 'Jobb oldali napelem szárny. Napenergiát alakít át elektromos energiává az akkumulátor töltéséhez.',
             'Main_Battery_Pack': 'Fő akkumulátor csomag. Energiatárolás a műhold működéséhez, különösen napfogyatkozás alatt.',
+            'GPS_Antenna': 'GPS antenna. Műhold pozíciójának meghatározása GPS jelek alapján. GPS spoofing vagy antenna hiba esetén rossz adatot ad.',
             'ST_A': 'Star Tracker A. Csillagok pozíciójának mérésével segíti a műhold orientációjának meghatározását.',
             'ST_B': 'Star Tracker B. Csillagok pozíciójának mérésével segíti a műhold orientációjának meghatározását.',
             'ST_C': 'Star Tracker C. Csillagok pozíciójának mérésével segíti a műhold orientációjának meghatározását.'

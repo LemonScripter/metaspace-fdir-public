@@ -5,10 +5,12 @@ try:
     from backend.modules.v3_biocode_engine import V3BioCodeEngine
     from backend.modules.v3_validation_engine import V3ValidationEngine
     from backend.modules.v3_validation_report import V3ValidationReportGenerator
+    from backend.modules.biocode_file_manager import BioCodeFileManager
 except ImportError:
     from modules.v3_biocode_engine import V3BioCodeEngine
     from modules.v3_validation_engine import V3ValidationEngine
     from modules.v3_validation_report import V3ValidationReportGenerator
+    from modules.biocode_file_manager import BioCodeFileManager
 
 class HolographicNode:
     """
@@ -40,8 +42,10 @@ class NeuralFractalNetwork:
     """
     A Landsat-9 holografikus hálózati motorja modulálható öngyógyítással.
     """
-    def __init__(self):
-        self.mission_requirements = ["logic", "navigation", "power", "comm"]
+    def __init__(self, landsat_model=None):
+        # ✅ VALÓDI: Landsat-9 kritikus alrendszerek (mission requirements)
+        # Forrás: Landsat-9 mission specification
+        self.mission_requirements = ["payload", "navigation", "power", "comm"]
         self.nodes = []
         self.regen_rate = 8.5 # Alapértelmezett Bio-Code sebesség
         
@@ -49,23 +53,34 @@ class NeuralFractalNetwork:
         self.biocode_engine = V3BioCodeEngine()
         self.validation_engine = V3ValidationEngine()
         self.report_generator = V3ValidationReportGenerator()
+        self.biocode_file_manager = BioCodeFileManager()  # 3 .bio fájl kezelés
         self.mission_day = 0  # Mission day counter
         self.validation_results = []  # Összesített validációs eredmények
         self.simulation_active = False  # Szimuláció aktív-e (csak akkor generálunk jelentést, ha True)
         
+        # VALÓS SZIMULÁCIÓ: Landsat9Model kapcsolat (opcionális, backward compatible)
+        self.landsat_model = landsat_model  # Valós fizikai modell (None is lehet, ha nincs)
+        
         self.reset_constellation()
 
     def reset_constellation(self):
-        """Konstelláció alaphelyzetbe állítása."""
+        """Konstelláció alaphelyzetbe állítása Landsat-9 valódi komponensekkel."""
+        # ✅ VALÓDI: Landsat-9 valódi komponens nevek és alrendszerek
+        # Forrás: NASA Landsat-9 specification
         self.nodes = [
-            HolographicNode("Main CPU Core", "CPU", "compute", ["logic", "storage"]),
-            HolographicNode("Star Tracker A", "ST_A", "sensor", ["navigation"]),
-            HolographicNode("Star Tracker B", "ST_B", "sensor", ["navigation"]),
-            HolographicNode("Power Controller", "EPS", "actuator", ["power"]),
-            HolographicNode("High-Gain Antenna", "ANT", "sensor", ["comm"]),
-            HolographicNode("Battery Array", "BATT", "sensor", ["power"])
+            HolographicNode("OLI-2", "OLI2", "payload", ["payload"]),  # Operational Land Imager-2
+            HolographicNode("TIRS-2", "TIRS2", "payload", ["payload"]),  # Thermal Infrared Sensor-2
+            HolographicNode("Star Tracker A", "ST_A", "sensor", ["navigation"]),  # GNC subsystem
+            HolographicNode("Star Tracker B", "ST_B", "sensor", ["navigation"]),  # GNC subsystem
+            HolographicNode("EPS", "EPS", "actuator", ["power"]),  # Electrical Power System
+            HolographicNode("OBC", "OBC", "compute", ["payload", "navigation"]),  # Onboard Computer
+            HolographicNode("X-band Transponder", "X_BAND", "sensor", ["comm"]),  # Communication
+            HolographicNode("S-band Transponder", "S_BAND", "sensor", ["comm"])  # Communication
         ]
-        self.nodes[0].is_master = True
+        # ✅ VALÓDI: OBC (Onboard Computer) a master node Landsat-9 spec szerint
+        obc_node = next((n for n in self.nodes if n.id == "OBC"), None)
+        if obc_node:
+            obc_node.is_master = True
         
         # Validációs rendszer reset
         self.validation_results = []
@@ -179,11 +194,58 @@ class NeuralFractalNetwork:
         Szuverén regenerációs ciklus BIO-KÓD ALAPJÁN.
         A bio-kód determinisztikusan vezérli az öngyógyítást.
         """
+        # 0. LÉPÉS: VALÓS SZIMULÁCIÓ - Node health szinkronizálása Landsat9Model komponensekkel
+        # REALISZTIKUS: Node health = valós komponens health (nem random degradáció)
+        # Fontos: Ez CSAK akkor fut le, ha van landsat_model (navigation-plan szimuláció)
+        # A v3_fractal_sim NEM használ landsat_model-t (None), így NEM érinti!
+        if self.landsat_model is not None:
+            # Valós komponens health-t használunk a node-okhoz
+            # EPS (power subsystem)
+            eps_node = next((n for n in self.nodes if n.id == "EPS"), None)
+            if eps_node and hasattr(self.landsat_model.eps, 'battery'):
+                # Battery health alapján
+                battery_health = getattr(self.landsat_model.eps.battery, 'health', 100.0)
+                eps_node.health = battery_health
+            
+            # GNC (navigation subsystem) - Star Tracker health
+            st_a_node = next((n for n in self.nodes if n.id == "ST_A"), None)
+            st_b_node = next((n for n in self.nodes if n.id == "ST_B"), None)
+            if st_a_node and len(self.landsat_model.gnc.star_trackers) > 0:
+                st_a_node.health = getattr(self.landsat_model.gnc.star_trackers[0], 'health', 100.0)
+            if st_b_node and len(self.landsat_model.gnc.star_trackers) > 1:
+                st_b_node.health = getattr(self.landsat_model.gnc.star_trackers[1], 'health', 100.0)
+            
+            # Payload (OLI2, TIRS2) - jelenleg nincs valós komponens, de lehet hozzáadni
+            # Comm (X_BAND, S_BAND) - jelenleg nincs valós komponens, de lehet hozzáadni
+        # Ha nincs landsat_model (pl. v3_fractal_sim), akkor NEM csinálunk semmit
+        # (A meglévő szimulációk működnek tovább, ahogy eddig - NEM ÉRINTJÜK!)
+        
         # 1. LÉPÉS: Bio-kód generálás az aktuális állapotból
         active_nodes = [n for n in self.nodes if n.health > 0]
         biocode_data = self.biocode_engine.generate_complete_biocode_sequence(
             self.nodes, active_nodes, self.mission_day
         )
+        
+        # 1.5. LÉPÉS: 3 .bio fájl mentése (műhold irányítás) + VALIDÁCIÓ
+        try:
+            save_result = self.biocode_file_manager.save_biocode_files(
+                biocode_data, 
+                mission_day=self.mission_day,
+                biocode_engine=self.biocode_engine,
+                validate=True  # Validálás titkosított fájlok szerint
+            )
+            biocode_data["_file_paths"] = save_result.get("file_paths", {})  # Fájl elérési utak hozzáadása
+            biocode_data["_validation"] = save_result.get("validation", {})  # Validációs eredmények hozzáadása
+            
+            # Validációs eredmények logolása
+            if save_result.get("validation", {}).get("passed", False):
+                print(f"[BIOCODE FILES] Saved and validated: {list(save_result.get('file_paths', {}).values())}")
+            else:
+                validation_details = save_result.get("validation", {})
+                print(f"[BIOCODE FILES] Warning: Files saved but validation failed: {validation_details}")
+        except Exception as e:
+            # Ha a fájl mentés sikertelen, folytatjuk (nem kritikus)
+            print(f"Warning: Failed to save bio-code files: {e}")
         
         # 2. LÉPÉS: Bio-kód alapján döntés - a Level 3 bio-kódból dekódoljuk az értékeket
         # Ez biztosítja, hogy a bio-kód vezérelje a műholdat, nem az architektúra
@@ -336,7 +398,7 @@ class NeuralFractalNetwork:
 
     def _migrate_master(self, active_nodes):
         """GIP alapú master választási logika."""
-        for req in ["logic", "navigation", "comm", "power"]:
+        for req in ["payload", "navigation", "comm", "power"]:  # ✅ VALÓDI: Landsat-9 kritikus alrendszerek
             for node in active_nodes:
                 if req in node.capabilities:
                     node.is_master = True

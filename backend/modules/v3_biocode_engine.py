@@ -19,21 +19,27 @@ class V3BioCodeEngine:
     
     def __init__(self):
         # Sensor/Node ID mapping (16-bit)
+        # ⚠️ HARDCODED: Belső azonosítók (nincs rá Landsat-9 spec)
+        # ✅ VALÓDI: Komponens nevek Landsat-9 spec alapján
         self.node_id_map = {
-            "CPU": 0x0001,
-            "ST_A": 0x0002,
-            "ST_B": 0x0003,
-            "EPS": 0x0004,
-            "ANT": 0x0005,
-            "BATT": 0x0006
+            "OLI2": 0x0001,      # Operational Land Imager-2 (Landsat-9 payload)
+            "TIRS2": 0x0002,    # Thermal Infrared Sensor-2 (Landsat-9 payload)
+            "ST_A": 0x0003,     # Star Tracker A (Landsat-9 GNC)
+            "ST_B": 0x0004,     # Star Tracker B (Landsat-9 GNC)
+            "EPS": 0x0005,      # Electrical Power System (Landsat-9 power)
+            "OBC": 0x0006,      # Onboard Computer (Landsat-9 computing)
+            "X_BAND": 0x0007,   # X-band Transponder (Landsat-9 comm)
+            "S_BAND": 0x0008    # S-band Transponder (Landsat-9 comm)
         }
         
         # Module ID mapping (8-bit)
+        # ⚠️ HARDCODED: Belső azonosítók (nincs rá Landsat-9 spec)
+        # ✅ VALÓDI: Alrendszer nevek Landsat-9 spec alapján
         self.module_id_map = {
-            "logic": 0x01,
-            "navigation": 0x02,
-            "power": 0x03,
-            "comm": 0x04
+            "payload": 0x01,     # OLI-2 + TIRS-2 (Landsat-9 payload)
+            "power": 0x02,       # EPS (Landsat-9 power)
+            "navigation": 0x03,  # GNC (Landsat-9 navigation)
+            "comm": 0x04         # X-band + S-band (Landsat-9 communication)
         }
         
         # Status encoding (4-bit)
@@ -65,11 +71,13 @@ class V3BioCodeEngine:
         }
         
         # Module weights for weighted feasibility calculation
+        # ✅ VALÓDI: Landsat-9 küldetés céljai alapján (Earth observation = payload kritikus)
+        # Forrás: Landsat-9 mission specification
         self.module_weights = {
-            "logic": 0.30,      # 30% - CPU kritikus
-            "navigation": 0.25, # 25% - Star Tracker kritikus
-            "power": 0.25,      # 25% - Power kritikus
-            "comm": 0.20        # 20% - Antenna fontos
+            "payload": 0.35,     # 35% - OLI-2 + TIRS-2 kritikus (fő küldetés: képalkotás)
+            "power": 0.30,       # 30% - EPS kritikus (nincs power = nincs működés)
+            "navigation": 0.20,  # 20% - GNC fontos (pálya megtartás, georeferálás)
+            "comm": 0.15         # 15% - Communication fontos (adat lejátszás, parancsok)
         }
     
     def generate_level1_biocode(self, node_id: str, health: float, status: str) -> int:
@@ -146,7 +154,7 @@ class V3BioCodeEngine:
         - Bits 0-11: Risk score (12 bits, 0-4095)
         
         Args:
-            module_name: Module name (logic, navigation, power, comm)
+            module_name: Module name (payload, navigation, power, comm)  # ✅ VALÓDI: Landsat-9 alrendszerek
             level1_codes: List of Level 1 bio-codes for this module
             health_history: Optional health history for trend calculation
         
@@ -491,5 +499,94 @@ class V3BioCodeEngine:
                 "total_bytes": 8
             },
             "compression_ratio": (len(level1_codes) * 8) / 8 if level1_codes else 1.0
+        }
+    
+    def generate_task_biocode(self, task: Dict[str, Any], nodes: List[Any], 
+                              active_nodes: List[Any], mission_day: int = 0) -> Dict[str, Any]:
+        """
+        Navigációs terv task-hoz bio-kód generálása.
+        
+        Args:
+            task: Task dictionary (type, required_nodes, priority, window, etc.)
+            nodes: Összes node
+            active_nodes: Aktív node-ok
+            mission_day: Mission day szám
+        
+        Returns:
+            Task bio-code információ (feasibility, execution_mode, biocode_data)
+        """
+        # 1. Task-hoz szükséges node-ok ellenőrzése
+        required_node_ids = task.get("required_nodes", [])
+        required_module_names = task.get("required_modules", [])
+        
+        # 2. Node health-ek összegyűjtése
+        node_health = {}
+        for node in nodes:
+            if node.id in required_node_ids:
+                node_health[node.id] = node.health
+        
+        # 3. Level 1 bio-code-ok generálása a szükséges node-okhoz
+        level1_codes = {}
+        for node_id in required_node_ids:
+            node = next((n for n in nodes if n.id == node_id), None)
+            if node:
+                status = "OPERATIONAL" if node.health > 75 else (
+                    "HEALING" if 0 < node.health <= 75 else "DEAD"
+                )
+                biocode = self.generate_level1_biocode(node.id, node.health, status)
+                level1_codes[node.id] = biocode
+        
+        # 4. Level 2 bio-code-ok generálása a szükséges modulokhoz
+        level2_codes = {}
+        for module_name in required_module_names:
+            if module_name in self.module_weights.keys():
+                module_nodes = [n for n in active_nodes if module_name in n.capabilities and n.id in required_node_ids]
+                if module_nodes:
+                    module_l1_codes = [level1_codes[n.id] for n in module_nodes if n.id in level1_codes]
+                    if module_l1_codes:
+                        health_history = [n.health for n in module_nodes]
+                        biocode = self.generate_level2_biocode(module_name, module_l1_codes, health_history)
+                        level2_codes[module_name] = biocode
+        
+        # 5. Level 3 bio-code generálása (task végrehajtási döntés)
+        if level2_codes:
+            level3_biocode, feasibility, action, safety_margin = self.generate_level3_biocode_from_level2(
+                mission_day, level2_codes
+            )
+        else:
+            # Nincs elég modul → task nem végrehajtható
+            feasibility = 0.0
+            action = "EMERGENCY_HALT"
+            safety_margin = 0
+            level3_biocode = self.generate_level3_biocode(mission_day, 0.0, action, 0)
+        
+        # 6. Task feasibility számítás (minimum node health alapján)
+        min_node_health = min([node_health.get(nid, 0) for nid in required_node_ids]) if required_node_ids else 0
+        task_feasible = min_node_health >= 70 and feasibility >= 40
+        
+        # 7. Task execution mode meghatározása
+        if feasibility >= 90 and action == "CONTINUE_NOMINAL":
+            execution_mode = "FULL"
+        elif feasibility >= 75 and action == "CONTINUE_WITH_MONITORING":
+            execution_mode = "DEGRADED"
+        elif feasibility >= 40:
+            execution_mode = "FALLBACK"
+        else:
+            execution_mode = "SKIP"
+        
+        return {
+            "task_id": task.get("task_id", "UNKNOWN"),
+            "task_type": task.get("type", "unknown"),
+            "feasible": task_feasible,
+            "feasibility": round(feasibility, 2),
+            "min_node_health": round(min_node_health, 2),
+            "execution_mode": execution_mode,
+            "action": action,
+            "safety_margin": safety_margin,
+            "biocode": {
+                "level1": {k: f"0x{v:016X}" for k, v in level1_codes.items()},
+                "level2": {k: f"0x{v:08X}" for k, v in level2_codes.items()},
+                "level3": f"0x{level3_biocode:016X}"
+            }
         }
 

@@ -97,6 +97,25 @@ class Landsat9Model:
             'active': self.eps.battery.is_active,
             'charge': self.eps.battery.current_charge
         }
+        # GPS measurement (EKF számára)
+        # Fontos: A gps_error lehet, hogy már be van állítva a simulator.py-ban (pl. GPS antenna hiba esetén)
+        # Ha nincs beállítva, akkor az attitude_integrity alapján számoljuk
+        # DE: Ne írjuk felül, ha már be van állítva (GPS antenna hiba esetén a simulator.py beállítja)
+        if not hasattr(self, 'gps_error'):
+            self.gps_error = 100.0 - attitude_integrity  # GPS hiba = 100 - attitude integrity
+        elif self.gps_error is None:
+            self.gps_error = 100.0 - attitude_integrity
+        # Ha már be van állítva (pl. GPS antenna hiba), akkor nem írjuk felül
+        
+        # GPS komponens hozzáadása (hogy megjelenjen a mátrixban)
+        # GPS health: 100% ha gps_error < 10%, 50% ha 10-50%, 0% ha > 50%
+        gps_health = 100.0 if self.gps_error < 10.0 else (50.0 if self.gps_error < 50.0 else 0.0)
+        component_health['GPS_Antenna'] = {
+            'health': gps_health,
+            'active': self.gps_error < 50.0,  # Aktív, ha nincs kritikus hiba
+            'error': self.gps_error
+        }
+        
         for sensor in self.gnc.star_trackers:
             component_health[sensor.name] = {
                 'health': sensor.health,
@@ -117,6 +136,35 @@ class Landsat9Model:
         
         self.last_state = telemetry
         return telemetry
+    
+    def get_gps_measurement(self):
+        """
+        GPS mérés lekérése (EKF számára).
+        Ha az akku < 10%, akkor None (nincs elég energia).
+        """
+        # Ha az akku < 10%, nincs GPS jel
+        # Biztosítjuk, hogy a capacity_wh attribútum létezik
+        if not hasattr(self.eps, 'battery') or not hasattr(self.eps.battery, 'capacity_wh'):
+            return None  # Ha nincs akku adat, nincs GPS
+        
+        capacity = getattr(self.eps.battery, 'capacity_wh', 4000.0)
+        current = getattr(self.eps.battery, 'current_charge', 0.0)
+        
+        if capacity <= 0:
+            return None
+        
+        battery_percent = (current / capacity) * 100.0
+        if battery_percent < 10.0:
+            return None
+        
+        # GPS pozíció (egyszerűsített - valóságban orbit mechanika)
+        # Alap pozíció + kicsi hiba (ha van GPS hiba)
+        base_pos = np.array([self.orbit_height * 1000, 0.0, 0.0])  # méterben
+        if hasattr(self, 'gps_error') and self.gps_error > 0:
+            error_magnitude = self.gps_error * 10.0  # méterben
+            error = np.random.normal(0, error_magnitude, 3)
+            return base_pos + error
+        return base_pos
 
     def run_full_day_simulation(self):
         results = []

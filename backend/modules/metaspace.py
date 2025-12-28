@@ -63,11 +63,16 @@ class MetaSpaceSimulator:
         # - Akku < 20%: Kritikus (FAULT)
         # - Akku < 40%: Degradált (DEGRADED)
         # - Power generation < 50%: Solar panel hiba (FAULT vagy DEGRADED)
-        if self.landsat9.battery_level < 20.0:
+        
+        # Biztosítjuk, hogy a battery_level és power_generation_w értékek léteznek
+        battery_level = getattr(self.landsat9, 'battery_level', 100.0)
+        power_generation = getattr(self.landsat9, 'power_generation_w', 2400.0)
+        
+        if battery_level < 20.0:
             self.health['power'] = 0 # FAULT (Kritikus)
-        elif self.landsat9.battery_level < 40.0:
+        elif battery_level < 40.0:
             self.health['power'] = 1 # DEGRADED
-        elif hasattr(self.landsat9, 'power_generation_w') and self.landsat9.power_generation_w <= 1200.0:
+        elif power_generation <= 1200.0:
             # Solar panel hiba: power generation <= 50% (normál: ~2400W, hiba esetén: <=1200W)
             # A MetaSpace azonnal észleli az energia invariáns megsértését
             # KRITIKUS: A solar panel hiba azonnal FAULT-ot jelent, mert nem tudja visszatölteni az akkut
@@ -78,15 +83,21 @@ class MetaSpaceSimulator:
 
         # --- GPS ELLENŐRZÉS (Spatial Invariant) ---
         # A MetaSpace a "maradék" (residual) hibát látja a modellek között
-        if self.landsat9.gps_error > 50.0:
-            self.health['gps'] = 0 # FAULT
+        # Fontos: A GPS antenna csak akkor hibás, ha közvetlenül GPS hiba van (pl. GPS spoofing)
+        # Az IMU drift NEM kapcsolja ki a GPS antennát, csak a navigációs rendszer összességében megbízhatatlan
+        # Biztosítjuk, hogy a gps_error attribútum létezzen
+        gps_error = getattr(self.landsat9, 'gps_error', 0.0)
+        if gps_error > 50.0:
+            self.health['gps'] = 0 # FAULT (GPS hiba közvetlenül, pl. GPS spoofing)
         else:
-            self.health['gps'] = 2
+            self.health['gps'] = 2  # GPS antenna működik
 
         # --- IMU ELLENŐRZÉS (Temporal Invariant) ---
-        if self.landsat9.imu_accumulated_error > 0.5:
+        # Biztosítjuk, hogy az imu_accumulated_error attribútum létezzen
+        imu_error = getattr(self.landsat9, 'imu_accumulated_error', 0.0)
+        if imu_error > 0.5:
             self.health['imu'] = 0 # FAULT
-        elif self.landsat9.imu_accumulated_error > 0.2:
+        elif imu_error > 0.2:
             self.health['imu'] = 1 # DEGRADED
         else:
             self.health['imu'] = 2

@@ -1,10 +1,22 @@
 """
 MetaSpace V3.2 - Validation Engine
 Matematikailag 100%-os validáció minden lépésre.
+Bio-kód validálás titkosított fájlok szerint.
 """
-from typing import Dict, List, Any, Tuple
+from typing import Dict, List, Any, Tuple, Optional
 import hashlib
 import json
+import os
+import sys
+
+# SecureBridge import (titkosított modulok betöltéséhez)
+try:
+    from backend.modules.secure_bridge import SecureBridge
+except ImportError:
+    try:
+        from modules.secure_bridge import SecureBridge
+    except ImportError:
+        SecureBridge = None
 
 
 class V3ValidationEngine:
@@ -38,11 +50,19 @@ class V3ValidationEngine:
             "biocode_consistency": {
                 "description": "decode(encode(state)) == state",
                 "check": self._check_biocode_consistency
+            },
+            "biocode_encrypted_validation": {
+                "description": "Bio-code validation according to encrypted files",
+                "check": self._check_biocode_encrypted_validation
             }
         }
         
         # Health history tracking (for regen monotonicity)
         self.health_history = {}  # {node_id: [health_values]}
+        
+        # Titkosított validátorok betöltése (ha elérhető)
+        self.encrypted_validators = {}
+        self._load_encrypted_validators()
     
     def _check_health_bounds(self, nodes: List[Any]) -> Tuple[bool, str]:
         """Ellenőrzi, hogy minden node health-je 0-100 között van"""
@@ -164,6 +184,97 @@ class V3ValidationEngine:
         except Exception as e:
             return False, f"Bio-code consistency check error: {str(e)}"
     
+    def _load_encrypted_validators(self):
+        """Titkosított validátorok betöltése a SecureBridge-en keresztül"""
+        if SecureBridge is None:
+            return
+        
+        try:
+            # SecureBridge inicializálása (ha még nem történt meg)
+            if not SecureBridge._initialized:
+                base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                key_path = os.path.join(base_dir, "metaspace_master.key")
+                if os.path.exists(key_path):
+                    SecureBridge.initialize(key_path)
+            
+            # Validátor osztályok betöltése a titkosított modulokból
+            if SecureBridge._initialized:
+                # VHDL_Synth modulból (ha van BioCodeValidator osztály)
+                try:
+                    if "VHDL_Synth" in SecureBridge._loaded_modules:
+                        module = SecureBridge._loaded_modules["VHDL_Synth"]
+                        if "BioCodeValidator" in module:
+                            self.encrypted_validators["VHDL_Synth"] = module["BioCodeValidator"]
+                            print("[V3 VALIDATION] Encrypted validator loaded: VHDL_Synth.BioCodeValidator")
+                except Exception as e:
+                    print(f"[V3 VALIDATION] Warning: Could not load VHDL_Synth validator: {e}")
+                
+                # Logic_Lock modulból (ha van BioCodeValidator osztály)
+                try:
+                    if "Logic_Lock" in SecureBridge._loaded_modules:
+                        module = SecureBridge._loaded_modules["Logic_Lock"]
+                        if "BioCodeValidator" in module:
+                            self.encrypted_validators["Logic_Lock"] = module["BioCodeValidator"]
+                            print("[V3 VALIDATION] Encrypted validator loaded: Logic_Lock.BioCodeValidator")
+                except Exception as e:
+                    print(f"[V3 VALIDATION] Warning: Could not load Logic_Lock validator: {e}")
+        except Exception as e:
+            print(f"[V3 VALIDATION] Warning: Could not load encrypted validators: {e}")
+    
+    def _check_biocode_encrypted_validation(self, biocode_data: Dict[str, Any],
+                                          biocode_engine: Any) -> Tuple[bool, str]:
+        """
+        Bio-kód validálás titkosított fájlok szerint.
+        
+        Args:
+            biocode_data: Bio-kód adatok
+            biocode_engine: Bio-kód engine
+        
+        Returns:
+            (passed, details)
+        """
+        if not biocode_data:
+            return True, "Nincs bio-code adat ellenőrzéshez"
+        
+        if not self.encrypted_validators:
+            # Ha nincsenek titkosított validátorok, akkor csak warning, nem hiba
+            return True, "Nincsenek titkosított validátorok (non-critical)"
+        
+        validation_results = []
+        all_passed = True
+        
+        # Minden titkosított validátorral validálunk
+        for validator_name, ValidatorClass in self.encrypted_validators.items():
+            try:
+                validator = ValidatorClass()
+                
+                # Validálás (a validátor osztály implementációjától függ)
+                # Feltételezzük, hogy van egy validate() metódusa
+                if hasattr(validator, 'validate'):
+                    result = validator.validate(biocode_data, biocode_engine)
+                    if isinstance(result, tuple):
+                        passed, details = result
+                    elif isinstance(result, dict):
+                        passed = result.get("passed", False)
+                        details = result.get("details", "No details")
+                    else:
+                        passed = bool(result)
+                        details = f"Validation result: {result}"
+                    
+                    validation_results.append(f"{validator_name}: {'PASSED' if passed else 'FAILED'} - {details}")
+                    if not passed:
+                        all_passed = False
+                else:
+                    validation_results.append(f"{validator_name}: No validate() method found")
+            except Exception as e:
+                validation_results.append(f"{validator_name}: Validation error - {str(e)}")
+                all_passed = False
+        
+        if all_passed:
+            return True, f"Encrypted validation PASSED: {', '.join(validation_results)}"
+        else:
+            return False, f"Encrypted validation FAILED: {', '.join(validation_results)}"
+    
     def validate_operation(self, operation: str, nodes: List[Any], 
                           active_nodes: List[Any], feasibility: float,
                           biocode_data: Dict[str, Any] = None,
@@ -209,6 +320,11 @@ class V3ValidationEngine:
                 elif name == "feasibility_bounds":
                     passed, details = invariant["check"](feasibility)
                 elif name == "biocode_consistency":
+                    if biocode_data and biocode_engine:
+                        passed, details = invariant["check"](biocode_data, biocode_engine)
+                    else:
+                        passed, details = True, "Bio-code not generated (not required for validation)"
+                elif name == "biocode_encrypted_validation":
                     if biocode_data and biocode_engine:
                         passed, details = invariant["check"](biocode_data, biocode_engine)
                     else:

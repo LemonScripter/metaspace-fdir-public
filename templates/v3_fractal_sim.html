@@ -241,20 +241,39 @@
 
     <script>
         /* --- D3.JS SZIMULÁCIÓ --- */
+        // ✅ VALÓDI: Landsat-9 valódi komponensek (8 node)
+        // Forrás: NASA Landsat-9 specification
         const nodes = [
-            { id: "CPU", name: "Main CPU Core", health: 100, master: true },
-            { id: "ST_A", name: "Star Tracker A", health: 100, master: false },
-            { id: "ST_B", name: "Star Tracker B", health: 100, master: false },
-            { id: "EPS", name: "Power Controller", health: 100, master: false },
-            { id: "ANT", name: "High-Gain Antenna", health: 100, master: false },
-            { id: "BATT", name: "Battery Array", health: 100, master: false }
+            { id: "OLI2", name: "OLI-2", health: 100, master: false },           // Operational Land Imager-2
+            { id: "TIRS2", name: "TIRS-2", health: 100, master: false },         // Thermal Infrared Sensor-2
+            { id: "ST_A", name: "Star Tracker A", health: 100, master: false },  // GNC subsystem
+            { id: "ST_B", name: "Star Tracker B", health: 100, master: false },  // GNC subsystem
+            { id: "EPS", name: "EPS", health: 100, master: false },              // Electrical Power System
+            { id: "OBC", name: "OBC", health: 100, master: true },               // Onboard Computer (master)
+            { id: "X_BAND", name: "X-band", health: 100, master: false },        // X-band Transponder
+            { id: "S_BAND", name: "S-band", health: 100, master: false }         // S-band Transponder
         ];
 
+        // ✅ VALÓDI: Landsat-9 alrendszer kapcsolatok (OBC = master hub)
+        // Logika: OBC (Onboard Computer) kapcsolódik minden alrendszerhez
         const links = [
-            { source: "CPU", target: "ST_A" }, { source: "CPU", target: "ST_B" },
-            { source: "CPU", target: "EPS" }, { source: "EPS", target: "BATT" },
-            { source: "ST_A", target: "ANT" }, { source: "ST_B", target: "ANT" },
-            { source: "ANT", target: "CPU" }
+            // OBC (master) → Payload
+            { source: "OBC", target: "OLI2" },
+            { source: "OBC", target: "TIRS2" },
+            // Payload node-ok egymás között (együtt dolgoznak)
+            { source: "OLI2", target: "TIRS2" },
+            // OBC → Navigation
+            { source: "OBC", target: "ST_A" },
+            { source: "OBC", target: "ST_B" },
+            // Navigation node-ok egymás között (redundancia)
+            { source: "ST_A", target: "ST_B" },
+            // OBC → Power
+            { source: "OBC", target: "EPS" },
+            // OBC → Communication
+            { source: "OBC", target: "X_BAND" },
+            { source: "OBC", target: "S_BAND" },
+            // Communication node-ok egymás között (redundancia)
+            { source: "X_BAND", target: "S_BAND" }
         ];
 
         // D3.js inicializálás - várjuk meg, amíg a DOM betöltődik
