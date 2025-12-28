@@ -185,10 +185,23 @@ class NeuralFractalNetwork:
             self.nodes, active_nodes, self.mission_day
         )
         
-        # 2. LÉPÉS: Bio-kód alapján döntés (action meghatározás)
-        action = biocode_data.get("level3", {}).get("action", "CONTINUE_NOMINAL")
-        feasibility = biocode_data.get("level3", {}).get("feasibility", 0)
-        safety_margin = biocode_data.get("level3", {}).get("safety_margin", 0)  # MINDIG definiálva
+        # 2. LÉPÉS: Bio-kód alapján döntés - a Level 3 bio-kódból dekódoljuk az értékeket
+        # Ez biztosítja, hogy a bio-kód vezérelje a műholdat, nem az architektúra
+        level3_hex = biocode_data.get("level3", {}).get("biocode", "")
+        if level3_hex:
+            level3_int = int(level3_hex, 16)
+            decoded_level3 = self.biocode_engine.decode_level3_biocode(level3_int)
+            action = decoded_level3.get("action", "CONTINUE_NOMINAL")
+            feasibility = decoded_level3.get("feasibility_percent", 0)
+            safety_margin = decoded_level3.get("safety_margin", 0)
+        else:
+            # Fallback (nem kellene előfordulnia)
+            action = biocode_data.get("level3", {}).get("action", "CONTINUE_NOMINAL")
+            feasibility = biocode_data.get("level3", {}).get("feasibility", 0)
+            safety_margin = biocode_data.get("level3", {}).get("safety_margin", 0)
+        
+        # REGENERÁCIÓ ELŐTTI health értékek mentése (regen_monotonicity check-hez)
+        previous_health_dict = {node.id: node.health for node in self.nodes}
         
         # 3. LÉPÉS: Bio-kód alapján determinisztikus öngyógyítás
         power_ok = any("power" in n.capabilities for n in active_nodes)
@@ -225,15 +238,24 @@ class NeuralFractalNetwork:
             elif feasibility <= 20:
                 events.append(f"BIO-CODE: Regeneration blocked (feasibility={feasibility:.1f}% too low).")
         
-        result = self._evaluate_feasibility([n for n in self.nodes if n.health > 0], events)
+        # Bio-kód adatok átadása a _evaluate_feasibility-nek (bio-kód vezérlés)
+        result = self._evaluate_feasibility([n for n in self.nodes if n.health > 0], events, biocode_data)
         
         # Ellenőrizzük, hogy van-e aktív szimuláció (van-e node ami nem 100%-os)
         has_damaged_nodes = any(n.health < 100.0 for n in self.nodes)
         
         # Szimuláció befejezésének ellenőrzése
         simulation_just_finished = False
-        if not has_damaged_nodes and result["feasibility"] >= 100.0 and self.simulation_active:
-            # Szimuláció most fejeződött be
+        
+        # Ha nincs power capability ÉS vannak sérült node-ok, akkor a szimuláció befejeződik
+        # (mert nem lehet regenerálni, végtelen ciklusba ragadna)
+        if not power_ok and has_damaged_nodes and self.simulation_active:
+            # Szimuláció befejeződik: nincs power, nem lehet regenerálni
+            self.simulation_active = False
+            simulation_just_finished = True
+            events.append("SIMULATION ENDED: No power capability - regeneration impossible.")
+        elif not has_damaged_nodes and result["feasibility"] >= 100.0 and self.simulation_active:
+            # Szimuláció most fejeződött be: minden node 100%-os
             self.simulation_active = False
             simulation_just_finished = True
         
@@ -241,6 +263,9 @@ class NeuralFractalNetwork:
         # Csak akkor generálunk jelentést, ha van aktív szimuláció VAGY éppen most fejeződött be
         if self.simulation_active or simulation_just_finished:
             try:
+                # Previous health dict átadása a validációs engine-nek (regen_monotonicity check-hez)
+                self.validation_engine._previous_health_dict = previous_health_dict
+                
                 validation_result = self.validation_engine.validate_operation(
                     operation="regeneration",
                     nodes=self.nodes,
@@ -250,6 +275,10 @@ class NeuralFractalNetwork:
                     biocode_engine=self.biocode_engine,
                     regen_active=should_regenerate
                 )
+                
+                # Previous health dict törlése a validáció után
+                if hasattr(self.validation_engine, '_previous_health_dict'):
+                    delattr(self.validation_engine, '_previous_health_dict')
                 
                 # Operations log frissítése
                 self.report_generator.add_operation(
@@ -313,26 +342,43 @@ class NeuralFractalNetwork:
                     node.is_master = True
                     return
 
-    def _evaluate_feasibility(self, active_nodes, events=[]):
-        """Küldetés stabilitási mutatóinak kiszámítása (SULYOZOTT)."""
-        # SÚLYOZOTT FEASIBILITY számítás (az új módszer)
-        feasibility_score, explanation = self.biocode_engine.calculate_weighted_feasibility(
-            self.nodes, active_nodes
-        )
+    def _evaluate_feasibility(self, active_nodes, events=[], biocode_data=None):
+        """
+        Küldetés stabilitási mutatóinak kiszámítása.
         
-        # Action meghatározása
-        module_health_dict = {
-            module: next(
-                (n.health for n in active_nodes if module in n.capabilities),
-                0.0
+        Ha van bio-kód adat, akkor azt használja (bio-kód vezérlés).
+        Különben a régi módszert használja (backward compatibility).
+        """
+        if biocode_data and biocode_data.get("level3", {}).get("biocode"):
+            # BIO-KÓD VEZÉRLÉS: A Level 3 bio-kódból dekódoljuk az értékeket
+            level3_hex = biocode_data.get("level3", {}).get("biocode", "")
+            level3_int = int(level3_hex, 16)
+            decoded_level3 = self.biocode_engine.decode_level3_biocode(level3_int)
+            
+            feasibility_score = decoded_level3.get("feasibility_percent", 0)
+            action = decoded_level3.get("action", "CONTINUE_NOMINAL")
+            safety_margin = decoded_level3.get("safety_margin", 0)
+            explanation = biocode_data.get("level3", {}).get("feasibility_explanation", 
+                f"Bio-kod vezert szamitas: {feasibility_score:.2f}%")
+        else:
+            # BACKWARD COMPATIBILITY: Régi módszer (közvetlen számítás)
+            feasibility_score, explanation = self.biocode_engine.calculate_weighted_feasibility(
+                self.nodes, active_nodes
             )
-            for module in self.biocode_engine.module_weights.keys()
-        }
-        action = self.biocode_engine.determine_action(feasibility_score, module_health_dict)
-        
-        # Safety margin
-        critical_threshold = 40
-        safety_margin = int(max(0, feasibility_score - critical_threshold))
+            
+            # Action meghatározása
+            module_health_dict = {
+                module: next(
+                    (n.health for n in active_nodes if module in n.capabilities),
+                    0.0
+                )
+                for module in self.biocode_engine.module_weights.keys()
+            }
+            action = self.biocode_engine.determine_action(feasibility_score, module_health_dict)
+            
+            # Safety margin
+            critical_threshold = 40
+            safety_margin = int(max(0, feasibility_score - critical_threshold))
         
         # Available capabilities (backward compatibility)
         available_caps = {cap for n in active_nodes for cap in n.capabilities}

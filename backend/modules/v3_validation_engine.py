@@ -82,8 +82,16 @@ class V3ValidationEngine:
         return True, f"Feasibility bounds OK: {feasibility:.2f}%"
     
     def _check_regen_monotonicity(self, nodes: List[Any], 
-                                  operation: str) -> Tuple[bool, str]:
-        """Ellenőrzi, hogy regen esetén a health nem csökken"""
+                                  operation: str,
+                                  previous_health_dict: Dict[str, float] = None) -> Tuple[bool, str]:
+        """
+        Ellenőrzi, hogy regen esetén a health nem csökken.
+        
+        Args:
+            nodes: Jelenlegi node-ok (regeneráció UTÁN)
+            operation: Művelet típusa
+            previous_health_dict: Regeneráció ELŐTTI health értékek {node_id: health}
+        """
         if operation != "regeneration":
             return True, "Nem regen művelet, nincs ellenőrzés szükséges"
         
@@ -92,8 +100,17 @@ class V3ValidationEngine:
             node_id = node.id
             current_health = node.health
             
-            # Health history ellenőrzése (ha van előző érték)
-            if node_id in self.health_history and len(self.health_history[node_id]) > 0:
+            # Ha van previous_health_dict (regeneráció ELŐTTI állapot), azt használjuk
+            if previous_health_dict and node_id in previous_health_dict:
+                previous_health = previous_health_dict[node_id]
+                # Kis tolerancia (0.01) a floating point hibák miatt
+                if current_health < previous_health - 0.01:
+                    violations.append(
+                        f"{node_id}: {previous_health:.1f}% → {current_health:.1f}% "
+                        f"(csokkenes regen kozben)"
+                    )
+            # Ha nincs previous_health_dict, akkor a health history-t használjuk (backward compatibility)
+            elif node_id in self.health_history and len(self.health_history[node_id]) > 0:
                 previous_health = self.health_history[node_id][-1]
                 # Kis tolerancia (0.01) a floating point hibák miatt
                 if current_health < previous_health - 0.01:
@@ -186,7 +203,9 @@ class V3ValidationEngine:
                 if name == "power_dependency":
                     passed, details = invariant["check"](nodes, regen_active)
                 elif name == "regen_monotonicity":
-                    passed, details = invariant["check"](nodes, operation)
+                    # A previous_health_dict-ot a validate_operation paraméterekből kell venni
+                    previous_health_dict = getattr(self, '_previous_health_dict', None)
+                    passed, details = invariant["check"](nodes, operation, previous_health_dict)
                 elif name == "feasibility_bounds":
                     passed, details = invariant["check"](feasibility)
                 elif name == "biocode_consistency":
@@ -206,6 +225,8 @@ class V3ValidationEngine:
                 if not passed:
                     results["overall_status"] = "FAILED"
                     results["errors"].append(f"{name}: {details}")
+                    # Logoljuk a FAILED okát (debug céljából)
+                    print(f"[V3 VALIDATION] FAILED: {name} - {details}")
             except Exception as e:
                 invariant_results[name] = {
                     "passed": False,
@@ -214,6 +235,10 @@ class V3ValidationEngine:
                 }
                 results["overall_status"] = "FAILED"
                 results["errors"].append(f"{name}: Check error - {str(e)}")
+                # Logoljuk az exception-t (debug céljából)
+                print(f"[V3 VALIDATION] EXCEPTION in {name}: {str(e)}")
+                import traceback
+                print(f"[V3 VALIDATION] Traceback: {traceback.format_exc()}")
         
         results["invariants"] = invariant_results
         
@@ -234,12 +259,14 @@ class V3ValidationEngine:
                     "proof": f"Feasibility = {feasibility:.2f}%, NEM 0-100 kozott ✗"
                 }
                 results["overall_status"] = "FAILED"
+                results["errors"].append(f"feasibility_formula: Feasibility = {feasibility:.2f}%, NEM 0-100 kozott")
         except Exception as e:
             math_results["feasibility_formula"] = {
                 "valid": False,
                 "proof": f"Error: {str(e)}"
             }
             results["overall_status"] = "FAILED"
+            results["errors"].append(f"feasibility_formula: Error - {str(e)}")
         
         # Bio-kód matematikai validáció
         if biocode_data and biocode_engine:
@@ -277,12 +304,18 @@ class V3ValidationEngine:
                             )
                         }
                         results["overall_status"] = "FAILED"
+                        results["errors"].append(
+                            f"biocode_encoding: Level 3 bio-code encoding/decoding NEM konzisztens: "
+                            f"expected={expected_feasibility:.2f}%, decoded={decoded_feasibility}%, "
+                            f"diff={feasibility_diff:.2f}% (tolerance: 1%)"
+                        )
             except Exception as e:
                 math_results["biocode_encoding"] = {
                     "valid": False,
                     "proof": f"Bio-code validation error: {str(e)}"
                 }
                 results["overall_status"] = "FAILED"
+                results["errors"].append(f"biocode_encoding: Bio-code validation error - {str(e)}")
         
         results["mathematics"] = math_results
         

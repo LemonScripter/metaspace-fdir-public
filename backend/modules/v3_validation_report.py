@@ -89,6 +89,20 @@ class V3ValidationReportGenerator:
             )
         } for n in nodes]
         
+        # Részletes logolás FAILED műveletekhez
+        if validation_result.get("overall_status") == "FAILED":
+            errors = validation_result.get("errors", [])
+            print(f"[V3 VALIDATION] FAILED művelet: {operation}")
+            print(f"[V3 VALIDATION] Hiba okok: {errors}")
+            # Invariánsok ellenőrzése
+            for name, result in validation_result.get("invariants", {}).items():
+                if not result.get("passed", True):
+                    print(f"[V3 VALIDATION] Invariáns FAILED: {name} - {result.get('details', 'N/A')}")
+            # Matematikai ellenőrzések
+            for name, result in validation_result.get("mathematics", {}).items():
+                if not result.get("valid", True):
+                    print(f"[V3 VALIDATION] Matematikai ellenőrzés FAILED: {name} - {result.get('proof', 'N/A')}")
+        
         self.operations_log.append({
             "operation": operation,
             "timestamp": validation_result.get("timestamp", datetime.now().isoformat()),
@@ -96,7 +110,8 @@ class V3ValidationReportGenerator:
             "feasibility": feasibility,
             "node_states": node_states,
             "validation_status": validation_result.get("overall_status"),
-            "biocode_level3": biocode_data.get("level3", {}).get("biocode") if biocode_data else None
+            "biocode_level3": biocode_data.get("level3", {}).get("biocode") if biocode_data else None,
+            "errors": validation_result.get("errors", [])  # Hibák tárolása
         })
     
     def generate_report(self, nodes: List[Any], active_nodes: List[Any],
@@ -176,11 +191,29 @@ class V3ValidationReportGenerator:
         total_operations = len(all_validation_results)
         passed_operations = sum(1 for r in all_validation_results 
                                if r.get("overall_status") == "PASSED")
+        failed_operations = total_operations - passed_operations
+        success_rate = (passed_operations / total_operations * 100) if total_operations > 0 else 0
         
         if total_operations == 0:
             overall_status = "UNKNOWN"
         elif passed_operations < total_operations:
             overall_status = "FAILED"
+        
+        # Overall status magyarázat
+        if overall_status == "FAILED":
+            overall_status_explanation = (
+                f"FAILED: {failed_operations} művelet sikertelen a {total_operations}-ból "
+                f"({success_rate:.1f}% success rate). "
+                f"A MetaSpace rendszer 100% validációt igényel - bármelyik művelet sikertelensége "
+                f"az Overall Status FAILED-ot eredményezi."
+            )
+        elif overall_status == "PASSED":
+            overall_status_explanation = (
+                f"PASSED: Minden {total_operations} művelet sikeres (100% success rate). "
+                f"A rendszer 100% matematikai validációval működik."
+            )
+        else:
+            overall_status_explanation = "UNKNOWN: Nincs elég adat az értékeléshez."
         
         # SHA-256 hash generálás
         # Ha nincs bio-kód, akkor is generálhatunk jelentést (csak validációs adatokkal)
@@ -220,11 +253,12 @@ class V3ValidationReportGenerator:
             "mathematics": aggregated_mathematics,
             "operations_log": self.operations_log,
             "overall_status": overall_status,
+            "overall_status_explanation": overall_status_explanation if 'overall_status_explanation' in locals() else "",
             "summary": {
                 "total_operations": total_operations,
                 "passed_operations": passed_operations,
-                "failed_operations": total_operations - passed_operations,
-                "success_rate": (passed_operations / total_operations * 100) if total_operations > 0 else 0
+                "failed_operations": failed_operations,
+                "success_rate": success_rate
             }
         }
         

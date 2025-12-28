@@ -93,8 +93,9 @@ class V3BioCodeEngine:
         node_id_code = self.node_id_map.get(node_id, 0x0000)
         status_code = self.status_encoding.get(status, 0b1111)
         
-        # Normalize health to 32-bit range (0-100 → 0-2^32)
-        health_normalized = int(np.clip(health, 0, 100) * (2**32) / 100)
+        # Normalize health to 32-bit range (0-100 → 0-2^32-1)
+        # Maximum value must be 2^32-1 to fit in 32 bits
+        health_normalized = int(np.clip(health, 0, 100) * ((2**32) - 1) / 100)
         
         # Confidence based on health (higher health = higher confidence)
         confidence = int(min(4095, health * 40.95))
@@ -117,7 +118,7 @@ class V3BioCodeEngine:
         confidence = biocode & 0xFFF
         
         # Reverse normalization
-        health = (health_normalized / (2**32)) * 100
+        health = (health_normalized / ((2**32) - 1)) * 100
         
         # Find node ID
         node_id = next((k for k, v in self.node_id_map.items() if v == node_id_code), "UNKNOWN")
@@ -221,10 +222,73 @@ class V3BioCodeEngine:
             "biocode_hex": f"0x{biocode:08X}"
         }
     
+    def generate_level3_biocode_from_level2(self, mission_day: int, 
+                                             level2_codes: Dict[str, int]) -> Tuple[int, float, str, int]:
+        """
+        Level 3 bio-kód generálása KÖZVETLENÜL a Level 2 bio-kódokból.
+        Ez a metódus a bio-kódot vezérlővé teszi - a feasibility és action
+        a Level 2 bio-kódokból származik, nem a közvetlen számításokból.
+        
+        Args:
+            mission_day: Mission day number
+            level2_codes: Dictionary of module_name -> Level 2 bio-code (32-bit int)
+        
+        Returns:
+            (level3_biocode, feasibility, action, safety_margin)
+        """
+        # Dekódoljuk a Level 2 bio-kódokat, hogy megkapjuk a modul health-eket
+        module_health = {}
+        for module_name, level2_code in level2_codes.items():
+            decoded = self.decode_level2_biocode(level2_code)
+            module_health[module_name] = decoded["health"]
+        
+        # Súlyozott feasibility számítás a Level 2 bio-kódokból
+        feasibility_score = sum(
+            module_health.get(module, 0.0) * weight 
+            for module, weight in self.module_weights.items()
+        )
+        feasibility_score = np.clip(feasibility_score, 0, 100)
+        
+        # Action meghatározása a Level 2 bio-kódokból
+        # Kritikus esetek ellenőrzése
+        if module_health.get("power", 100) < 20:
+            action = "EMERGENCY_HALT"
+        elif feasibility_score >= 90:
+            action = "CONTINUE_NOMINAL"
+        elif feasibility_score >= 75:
+            action = "CONTINUE_WITH_MONITORING"
+        elif feasibility_score >= 60:
+            action = "REDUCE_IMAGING_RATE"
+        elif feasibility_score >= 40:
+            action = "SWITCH_TO_FALLBACK"
+        elif feasibility_score >= 20:
+            action = "SAFE_MODE"
+        else:
+            action = "EMERGENCY_HALT"
+        
+        # Safety margin számítás (40% kritikus küszöb)
+        critical_threshold = 40
+        safety_margin = int(max(0, feasibility_score - critical_threshold))
+        
+        # Level 3 bio-code generálás
+        action_code = self.action_codes.get(action, 0x000000)
+        feasibility_int = int(np.clip(feasibility_score, 0, 100))
+        
+        # Pack into 64-bit integer
+        level3_biocode = (
+            ((mission_day & 0xFFFF) << 48) |           # Bits 48-63: Mission day
+            (feasibility_int << 32) |                  # Bits 32-47: Feasibility %
+            ((action_code & 0xFFFFFF) << 8) |          # Bits 8-31: Action
+            (safety_margin & 0xFF)                     # Bits 0-7: Safety margin
+        )
+        
+        return level3_biocode, feasibility_score, action, safety_margin
+    
     def generate_level3_biocode(self, mission_day: int, feasibility: float, 
                                 action: str, safety_margin: int) -> int:
         """
         Level 3: Mission decision → 64-bit bio-code
+        (Backward compatibility - használjuk a generate_level3_biocode_from_level2-et helyette)
         
         Structure:
         - Bits 48-63: Mission day (16 bits)
@@ -390,25 +454,21 @@ class V3BioCodeEngine:
                     biocode = self.generate_level2_biocode(module_name, module_l1_codes, health_history)
                     level2_codes[module_name] = biocode
         
-        # Súlyozott feasibility számítás
-        feasibility, explanation = self.calculate_weighted_feasibility(nodes, active_nodes)
+        # Level 3: Mission bio-code generálása KÖZVETLENÜL a Level 2 bio-kódokból
+        # Ez biztosítja, hogy a bio-kód vezérelje a műholdat, nem az architektúra
+        level3_biocode, feasibility, action, safety_margin = self.generate_level3_biocode_from_level2(
+            mission_day, level2_codes
+        )
         
-        # Action meghatározása
-        module_health_dict = {
-            module: next(
-                (n.health for n in active_nodes if module in n.capabilities),
-                0.0
-            )
-            for module in self.module_weights.keys()
-        }
-        action = self.determine_action(feasibility, module_health_dict)
-        
-        # Safety margin számítás (40% kritikus küszöb)
-        critical_threshold = 40
-        safety_margin = int(max(0, feasibility - critical_threshold))
-        
-        # Level 3: Mission bio-code
-        level3_biocode = self.generate_level3_biocode(mission_day, feasibility, action, safety_margin)
+        # Magyarázat generálása (backward compatibility)
+        explanation_parts = []
+        for module, weight in self.module_weights.items():
+            if module in level2_codes:
+                decoded = self.decode_level2_biocode(level2_codes[module])
+                explanation_parts.append(f"{module}({weight*100:.0f}%)*{decoded.get('health', 0):.1f}%")
+            else:
+                explanation_parts.append(f"{module}({weight*100:.0f}%)*0.0%")
+        explanation = "Bio-kod vezert szamitas (Level 2 -> Level 3): " + " + ".join(explanation_parts) + f" = {feasibility:.2f}%"
         
         return {
             "mission_day": mission_day,

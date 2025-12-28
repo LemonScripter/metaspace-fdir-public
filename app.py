@@ -75,6 +75,28 @@ def v3_regen_api():
         traceback.print_exc()
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route('/api/v3/reset', methods=['POST'])
+def v3_reset_api():
+    """Backend állapot reset-elése (hard refresh után)"""
+    try:
+        v3_network.reset_constellation()
+        return jsonify({"status": "success", "message": "Network reset successful"})
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/v3/state', methods=['GET'])
+def v3_state_api():
+    """Backend állapot lekérése (inicializáláskor)"""
+    try:
+        active_nodes = [n for n in v3_network.nodes if n.health > 0]
+        result = v3_network._evaluate_feasibility(active_nodes, [])
+        result["nodes"] = [n.get_telemetry() for n in v3_network.nodes]
+        return jsonify({"status": "success", "data": result})
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 # --- V2 SIMULATOR API ---
 @app.route('/api/simulation', methods=['POST'])
 def run_simulation():

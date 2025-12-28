@@ -257,10 +257,16 @@
             { source: "ANT", target: "CPU" }
         ];
 
+        // D3.js inicializálás - várjuk meg, amíg a DOM betöltődik
         const svg = d3.select("#fractal-svg");
         const canvas = document.getElementById('neural-canvas');
-        const width = canvas.clientWidth;
-        const height = canvas.clientHeight;
+        
+        // Biztosítjuk, hogy a canvas méretei elérhetők legyenek
+        const width = canvas ? canvas.clientWidth || 800 : 800;
+        const height = canvas ? canvas.clientHeight || 600 : 600;
+        
+        // SVG méreteinek beállítása
+        svg.attr("width", width).attr("height", height);
 
         const simulation = d3.forceSimulation(nodes)
             .force("link", d3.forceLink(links).id(d => d.id).distance(140))
@@ -274,7 +280,14 @@
             .attr("class", "node-circle").attr("r", 15)
             .attr("fill", d => d.master ? "var(--warning-yellow)" : "var(--neon-cyan)")
             .attr("stroke", "#000").attr("stroke-width", 2)
-            .on("click", (e, d) => executeV3Chaos('single', d.id));
+            .on("click", function(e, d) {
+                // Megakadályozzuk az event propagation-t
+                e.stopPropagation();
+                // Csak a kattintott node kikapcsolása
+                if (d && d.id) {
+                    executeV3Chaos('single', d.id);
+                }
+            });
 
         const label = svg.append("g").selectAll("text").data(nodes).join("text")
             .attr("class", "node-text").text(d => d.name).attr("dx", 22).attr("dy", 5);
@@ -300,25 +313,111 @@
         }
 
         async function executeV3Chaos(type, targetId = null) {
-            let killed = (type === 'single') ? [targetId] : nodes.filter(() => Math.random() > 0.6).map(n => n.id);
+            // Biztosítjuk, hogy csak a megfelelő node-okat kapcsoljuk ki
+            let killed = [];
+            if (type === 'single' && targetId) {
+                // Csak egy node kikapcsolása
+                killed = [targetId];
+            } else if (type === 'emp_pulse') {
+                // EMP pulse: véletlenszerűen több node
+                killed = nodes.filter(() => Math.random() > 0.6).map(n => n.id);
+            } else {
+                // Alapértelmezett: véletlenszerűen több node
+                killed = nodes.filter(() => Math.random() > 0.6).map(n => n.id);
+            }
+            
+            // Ha nincs kiválasztott node, ne csináljunk semmit
+            if (killed.length === 0) {
+                console.log("No nodes to kill");
+                return;
+            }
+            
             try {
+                // Regeneráció loop indítása (ha még nem fut)
+                if (!regenerationInterval) {
+                    startRegenerationLoop();
+                }
+                
+                console.log(`[V3] Killing nodes: ${killed.join(', ')}`);
+                
                 const response = await fetch('/api/v3/chaos', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ killed_nodes: killed })
                 });
                 const result = await response.json();
-                updateUI(result.data);
-            } catch (e) { console.error("Chaos injection failed", e); }
+                
+                if (result.status === 'success' && result.data) {
+                    updateUI(result.data);
+                } else {
+                    console.error("Chaos injection failed:", result.message || "Unknown error");
+                }
+            } catch (e) { 
+                console.error("Chaos injection failed", e); 
+            }
         }
 
-        setInterval(async () => {
+        let regenerationInterval = null;
+        let simulationActive = false;
+        
+        function startRegenerationLoop() {
+            if (regenerationInterval) return; // Már fut
+            simulationActive = true;
+            regenerationInterval = setInterval(async () => {
+                if (!simulationActive) {
+                    clearInterval(regenerationInterval);
+                    regenerationInterval = null;
+                    return;
+                }
+                try {
+                    const response = await fetch('/api/v3/regen', { method: 'POST' });
+                    const result = await response.json();
+                    updateUI(result.data);
+                    
+                    // Ha a szimuláció befejeződött (nincs power vagy minden node 100%), akkor leállítjuk
+                    if (result.data && result.data.events) {
+                        const hasSimulationEnded = result.data.events.some(ev => 
+                            ev.includes('SIMULATION ENDED') || 
+                            ev.includes('No power capability') ||
+                            (result.data.feasibility === 100 && result.data.nodes.every(n => n.health === 100))
+                        );
+                        if (hasSimulationEnded) {
+                            simulationActive = false;
+                            clearInterval(regenerationInterval);
+                            regenerationInterval = null;
+                        }
+                    }
+                } catch (e) { }
+            }, 3000);
+        }
+        
+        // Regeneráció loop indítása az első chaos injection után
+        // (A chaos injection után automatikusan elindul)
+
+        // Oldal betöltésekor: backend állapot reset-elése és inicializálás
+        async function initializePage() {
             try {
-                const response = await fetch('/api/v3/regen', { method: 'POST' });
+                // Backend reset (biztosítjuk, hogy tiszta állapotból induljunk)
+                await fetch('/api/v3/reset', { method: 'POST' });
+                
+                // Backend állapot lekérése és UI frissítése
+                const response = await fetch('/api/v3/state', { method: 'GET' });
                 const result = await response.json();
-                updateUI(result.data);
-            } catch (e) { }
-        }, 3000);
+                
+                if (result.status === 'success' && result.data) {
+                    updateUI(result.data);
+                }
+            } catch (e) {
+                console.error("Page initialization failed", e);
+            }
+        }
+        
+        // Oldal betöltésekor inicializálás
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializePage);
+        } else {
+            initializePage();
+        }
 
         let latestValidationReport = null;
 
@@ -362,10 +461,10 @@
             panel.style.display = 'block';
 
             const status = report.overall_status || 'UNKNOWN';
+            const statusExplanation = report.overall_status_explanation || '';
             const statusColor = status === 'PASSED' ? 'var(--success-green)' : 
                                status === 'FAILED' ? 'var(--alert-red)' : 'var(--warning-yellow)';
             const statusIcon = status === 'PASSED' ? '✓' : status === 'FAILED' ? '✗' : '?';
-
             let html = `
                 <div style="background:rgba(0,10,20,0.6); border:1px solid ${statusColor}; padding:10px; margin-bottom:10px; border-radius:2px;">
                     <div style="color:${statusColor}; font-weight:bold; margin-bottom:5px;">
@@ -376,6 +475,11 @@
                         Timestamp: ${report.timestamp ? new Date(report.timestamp).toLocaleString() : 'N/A'}<br>
                         Success Rate: ${report.summary ? report.summary.success_rate.toFixed(1) + '%' : 'N/A'}
                     </div>
+                    ${statusExplanation ? `
+                        <div style="margin-top:8px; padding:8px; background:rgba(0,0,0,0.3); border-radius:2px; font-size:8px; line-height:1.4; color:var(--text-dim);">
+                            ${statusExplanation}
+                        </div>
+                    ` : ''}
                 </div>
             `;
 
@@ -411,12 +515,13 @@
                     const passed = result.last_status !== false;
                     const color = passed ? 'var(--success-green)' : 'var(--alert-red)';
                     const icon = passed ? '✓' : '✗';
+                    const details = result.last_details || 'N/A';
                     html += `
-                        <div style="margin:3px 0;">
+                        <div style="margin:3px 0; ${!passed ? 'background:rgba(255,42,42,0.1); padding:5px; border-left:2px solid var(--alert-red);' : ''}">
                             <span style="color:${color};">${icon}</span> 
                             <strong>${name}:</strong> ${result.description || 'N/A'}<br>
-                            <span style="font-size:8px; color:var(--text-dim); margin-left:15px;">
-                                ${result.last_details || 'N/A'}
+                            <span style="font-size:8px; color:var(--text-dim); margin-left:15px; display:block; margin-top:2px;">
+                                ${details}
                             </span>
                         </div>
                     `;
@@ -435,17 +540,43 @@
                     const valid = result.last_valid !== false;
                     const color = valid ? 'var(--success-green)' : 'var(--alert-red)';
                     const icon = valid ? '✓' : '✗';
+                    const proof = result.last_proof || 'N/A';
                     html += `
-                        <div style="margin:3px 0;">
+                        <div style="margin:3px 0; ${!valid ? 'background:rgba(255,42,42,0.1); padding:5px; border-left:2px solid var(--alert-red);' : ''}">
                             <span style="color:${color};">${icon}</span> 
                             <strong>${name}:</strong><br>
-                            <span style="font-size:8px; color:var(--text-dim); margin-left:15px;">
-                                ${result.last_proof || 'N/A'}
+                            <span style="font-size:8px; color:var(--text-dim); margin-left:15px; display:block; margin-top:2px;">
+                                ${proof}
                             </span>
                         </div>
                     `;
                 }
                 html += `</div></div>`;
+            }
+            
+            // Operations log - FAILED műveletek részletesen
+            if (report.operations_log && report.operations_log.length > 0) {
+                const failedOps = report.operations_log.filter(op => op.validation_status === 'FAILED');
+                if (failedOps.length > 0) {
+                    html += `
+                        <div style="background:rgba(255,42,42,0.1); border:1px solid var(--alert-red); padding:10px; margin-bottom:10px; border-radius:2px;">
+                            <div style="color:var(--alert-red); font-weight:bold; margin-bottom:5px;">✗ FAILED Műveletek Részletei</div>
+                            <div style="font-size:9px;">
+                    `;
+                    for (const op of failedOps.slice(-3)) { // Utolsó 3 FAILED művelet
+                        html += `
+                            <div style="margin:3px 0; padding:5px; background:rgba(0,0,0,0.3); border-radius:2px;">
+                                <strong>${op.operation}</strong> (${new Date(op.timestamp).toLocaleTimeString()})<br>
+                                ${op.errors && op.errors.length > 0 ? `
+                                    <span style="font-size:8px; color:var(--alert-red); margin-left:15px; display:block; margin-top:2px;">
+                                        ${op.errors.join('<br>')}
+                                    </span>
+                                ` : '<span style="font-size:8px; color:var(--text-dim); margin-left:15px;">Nincs részletes hiba információ</span>'}
+                            </div>
+                        `;
+                    }
+                    html += `</div></div>`;
+                }
             }
 
             content.innerHTML = html;
@@ -492,8 +623,22 @@
                 fetchLatestValidationReport();
             }
             
+            // Szimuláció befejezésének ellenőrzése
+            if (data.events && data.events.some(ev => ev.includes('SIMULATION ENDED'))) {
+                simulationActive = false;
+                if (regenerationInterval) {
+                    clearInterval(regenerationInterval);
+                    regenerationInterval = null;
+                }
+            }
+            
             if (data.feasibility === 100 && data.events.length === 0 && terminal && terminal.innerHTML.includes('SUCCESS')) {
                 setTimeout(() => { terminal.innerHTML = "> Integrity Verified. System Nominal."; }, 5000);
+                simulationActive = false;
+                if (regenerationInterval) {
+                    clearInterval(regenerationInterval);
+                    regenerationInterval = null;
+                }
             }
 
             if (data.events.length > 0 && terminal) {
