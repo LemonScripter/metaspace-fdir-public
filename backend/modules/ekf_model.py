@@ -11,17 +11,108 @@ except ImportError:
     except ImportError:
         EKFFileManager = None
 
+class KalmanFilter3D:
+    """
+    Standard Linear Kalman Filter for 3D Position & Velocity estimation.
+    State Vector (x): [pos_x, pos_y, pos_z, vel_x, vel_y, vel_z]
+    """
+    def __init__(self, dt=1.0, process_noise=0.1, measurement_noise=10.0):
+        self.dt = dt
+        
+        # 1. State Vector [x, y, z, vx, vy, vz]
+        self.x = np.zeros(6)
+        
+        # 2. State Transition Matrix (F) - Constant Velocity Model
+        # x_new = x_old + vx * dt
+        self.F = np.eye(6)
+        self.F[0, 3] = dt
+        self.F[1, 4] = dt
+        self.F[2, 5] = dt
+        
+        # 3. Measurement Matrix (H)
+        # We only measure Position (x, y, z), not Velocity
+        self.H = np.zeros((3, 6))
+        self.H[0, 0] = 1
+        self.H[1, 1] = 1
+        self.H[2, 2] = 1
+        
+        # 4. Covariance Matrix (P) - Initial uncertainty
+        self.P = np.eye(6) * 100.0
+        
+        # 5. Process Noise Covariance (Q) - Uncertainty in the physics model
+        self.Q = np.eye(6) * process_noise
+        
+        # 6. Measurement Noise Covariance (R) - Sensor noise
+        self.R = np.eye(3) * measurement_noise
+
+    def predict(self):
+        """
+        Prediction Step: Project the state ahead based on physics (F).
+        Increases uncertainty (P).
+        """
+        # x = F * x
+        self.x = np.dot(self.F, self.x)
+        # P = F * P * F^T + Q
+        self.P = np.dot(np.dot(self.F, self.P), self.F.T) + self.Q
+
+    def update(self, measurement):
+        """
+        Correction Step: Update with new measurement.
+        Decreases uncertainty (P).
+        """
+        z = np.array(measurement)
+        
+        # Innovation (Residual): y = z - H * x
+        y = z - np.dot(self.H, self.x)
+        
+        # Innovation Covariance: S = H * P * H^T + R
+        S = np.dot(np.dot(self.H, self.P), self.H.T) + self.R
+        
+        # Optimal Kalman Gain: K = P * H^T * inv(S)
+        K = np.dot(np.dot(self.P, self.H.T), np.linalg.inv(S))
+        
+        # Update State: x = x + K * y
+        self.x = self.x + np.dot(K, y)
+        
+        # Update Covariance: P = (I - K * H) * P
+        I = np.eye(6)
+        self.P = np.dot((I - np.dot(K, self.H)), self.P)
+
+    def get_confidence(self):
+        """
+        Calculate confidence based on the trace of Covariance Matrix (P).
+        Lower trace = Higher confidence.
+        """
+        # Trace represents the sum of variances (uncertainty)
+        trace = np.trace(self.P)
+        
+        # Map trace to 0-100% scale
+        # Example: Trace < 10 -> 100%, Trace > 1000 -> 0%
+        # Using an exponential decay function for realistic falloff
+        # confidence = 100 * exp(-k * trace)
+        
+        # Tuning parameter: determines how fast confidence drops with uncertainty
+        k = 0.005 
+        confidence = 100.0 * np.exp(-k * trace)
+        return max(0.0, min(100.0, confidence))
+
 class EKFSimulator:
     """
-    Hagyományos Extended Kalman Filter (a 'régi' technológia).
+    Real Mathematical EKF Implementation (Steel-man argument).
+    
+    Demonstrates:
+    1. Precise navigation when sensors work.
+    2. "Battery Blindness": The math works perfectly even if the battery is dying.
+    3. Natural degradation: Confidence drops mathematically when data is lost.
     """
     def __init__(self, landsat_model):
         self.model = landsat_model
         
-        # Állapotbecslés (dummy)
-        self.state = np.zeros(15)
-        self.covariance = np.eye(15) * 10.0
+        # Initialize the real Mathematical Filter
+        # dt=0.1 min (6 seconds), matches simulate_step
+        self.kf = KalmanFilter3D(dt=0.1, process_noise=0.1, measurement_noise=50.0)
         
+        # Initial State
         self.confidence = 100.0
         self.anomaly_detected = False
         self.detection_latency = 0
@@ -30,305 +121,149 @@ class EKFSimulator:
         self.scenes_today = 0
         self.data_loss_today = 0
         
-        # EKF File Manager inicializálása (3 .ekf fájl kezelés)
         self.ekf_file_manager = EKFFileManager() if EKFFileManager is not None else None
-        self.mission_day = 0  # Mission day counter
+        self.mission_day = 0 
 
     def update(self):
         """
-        EKF frissítési ciklus.
-        A probléma: Az EKF a *szenzorokra* figyel, nem az akkumulátorra.
-        Ha az akku lemerül, az EKF gyakran még "jónak" látja a navigációt,
-        ezért engedi tovább a működést -> Dead Bus.
-        
-        REÁLIS VISELKEDÉS:
-        - Solar panel hiba → akku lassan lemerül → GPS timeout (< 10%) → EKF lassan reagál
-        - Battery failure → akku azonnal lemerül → GPS timeout → EKF lassan reagál
-        - GPS antenna hiba → rossz GPS adat → EKF lassan reagál (heurisztikus próbálkozás)
-        - IMU drift → fokozatos navigációs hiba → EKF lassan reagál
+        Valós EKF frissítési ciklus.
         """
-        
-        # 0. Először frissítjük a modellt (hogy a gps_error létezzen)
-        # Egy rövid időlépés szimulálása
+        # 0. Először frissítjük a fizikai modellt
         try:
-            self.model.simulate_step(0.1)  # 0.1 perc szimuláció
+            self.model.simulate_step(0.1)
         except Exception as e:
-            # Ha nem sikerül, folytatjuk, de logoljuk a hibát
             print(f"[EKF] Warning: simulate_step failed: {e}")
             pass
         
-        # 0.5. Időbeli degradáció (wear and tear) - CSAK navigation-plan szimulációhoz
-        # REALISZTIKUS: Normál működésben (nincs hiba) a confidence stabil marad (100%)
-        # Fontos: Ez CSAK akkor fut le, ha van landsat_model (navigation-plan szimuláció)
-        # A v3_fractal_sim NEM használ EKF-et, így NEM érinti!
-        # Degradáció csak akkor, ha:
-        # 1. Van valós komponens hiba (GPS, IMU, stb.)
-        # 2. Vagy időbeli kopás (wear and tear) - de csak hosszú távon
-        # Jelenleg: Nincs automatikus degradáció normál működésben
-        # (A degradáció csak valós hibák esetén történik, amit a GPS/IMU észlel)
+        # 1. Prediction Step (Mindig lefut - ez a fizikai modell becslése)
+        self.kf.predict()
         
-        # 1. Szenzor adatok lekérése
-        gps = self.model.get_gps_measurement()
+        # 2. Measurement Update (Csak ha van adat)
+        gps_measurement = self.model.get_gps_measurement()
         
-        # 2. Hiba logika (Szimulált EKF viselkedés)
-        # REÁLIS: Ha az akku < 10%, a GPS jel eltűnik (nincs elég energia)
-        # Az EKF ezt észleli, de lassan reagál (valószínűségszámítás, átlagolás)
-        if gps is None:
-            # GPS Timeout - Ezt észreveszi, de lassan
-            # Reálisan: 1-2 nap alatt észleli a GPS timeout-ot
-            # Heurisztikusan próbálja visszaállítani a kapcsolatot
-            self.confidence -= 2.0  # Lassan csökken (átlagolva)
-        else:
-            # GPS van. Ha az akksi halott, az EKF ezt NEM látja a GPS jelben!
-            # Ezért a confidence marad 100%, amíg a feszültség el nem tűnik teljesen.
+        if gps_measurement is not None:
+            # Van GPS jel -> Korrekció
+            self.kf.update(gps_measurement)
             
-            # Csak a GPS hibát venné észre, de azt is lassan (átlagolva)
-            # GPS antenna hiba esetén: rossz adatot kap, heurisztikusan próbálja visszaterelni
-            # Lassan csökken a bizalom (valószínűségszámítás, tehetetlenség)
-            gps_error = getattr(self.model, 'gps_error', 0.0)
-            if gps_error > 50.0:
-                # Lassan csökken a bizalom (szimulálva a tehetetlenséget és heurisztikus próbálkozást)
-                # Minél nagyobb a GPS hiba, annál gyorsabban csökken
-                # De még mindig lassan (EKF jellemző: heurisztikus, valószínűségszámítás)
-                # Az EKF heurisztikusan próbálja visszaterelni a műholdat, de lassan
-                error_factor = min(2.0, (gps_error - 50.0) / 25.0)
-                self.confidence -= (1.5 + error_factor)  # Lassabban csökken
-            else:
-                # Nincs hiba, vagy kicsi hiba -> confidence stabil marad
-                # REALISZTIKUS: Normál működésben a confidence nem növekszik, csak degradáció miatt csökken
-                # Csak akkor növekszik, ha valódi javulás van (pl. hiba után recovery)
-                # Jelenleg: stabil marad (degradáció miatt már csökkent)
-                pass  # Confidence nem változik normál működésben
+            # Ellenőrizzük a "Residual"-t (Innovációt) az anomália detektáláshoz
+            # A Kalman szűrő belső állapotából számoljuk
+            estimated_pos = self.kf.x[:3]
+            residual = np.linalg.norm(gps_measurement - estimated_pos)
+            
+            # Ha a mért adat nagyon eltér a becsülttől -> Anomália gyanú
+            # (Pl. GPS spoofing vagy hirtelen ugrás)
+            if residual > 500.0: # 500 méter küszöb
+                # EKF dilemma: Elfogadjam a mérést vagy a modellt?
+                # A hagyományos EKF lassan alkalmazkodik (Gain függő)
+                pass 
+        else:
+            # Nincs GPS jel (pl. Akku < 10% miatt a szenzor leállt)
+            # CSAK PREDICT futott le -> A P mátrix értékei nőnek -> Confidence csökken
+            pass
+            
+        # 3. Confidence frissítése a valós matematikai bizonytalanságból
+        self.confidence = self.kf.get_confidence()
         
-        # Határolás
-        self.confidence = max(0.0, min(100.0, self.confidence))
-        
-        # 3. Döntés
-        # Az EKF csak akkor jelez hibát, ha nagyon biztos benne (60% alatt)
+        # 4. Anomália detektálás döntés
+        # Az EKF csak akkor jelez hibát, ha a bizonytalanság matematikai szinten megnő
         if self.confidence < 60.0:
-            self.anomaly_detected = True
-            # Dinamikus detection latency számítás a hiba típusa alapján
-            # Tudományos alap: EKF valószínűségszámítási módszere miatt lassan reagál
-            self.detection_latency = self._calculate_detection_latency()
+            if not self.anomaly_detected:
+                self.anomaly_detected = True
+                # A látencia itt nem random, hanem az az idő, amíg a P mátrix felhízik
+                # Mivel 0.1 percenként frissítünk, ez természetes folyamat
+                self.detection_latency = 1 # Jelzésértékű
         else:
             self.anomaly_detected = False
             
-        # 4. Adatgyűjtés (A végzetes hiba: Ha nincs hiba jelezve, gyűjtünk!)
-        # Ha az akksi 18%, de az EKF 100%-ot mond, akkor gyűjtünk -> Selejt/Veszély
-        # GPS antenna hiba esetén: Az EKF rossz adatot kap, de lassan reagál
-        # Közben tovább gyűjt adatot (fölösleges/költséges fotók) -> data_loss nő
-        if not self.anomaly_detected:
-            # Ha nincs hiba jelezve, de van GPS hiba, akkor rossz adatot gyűjtünk
-            gps_error = getattr(self.model, 'gps_error', 0.0)
-            if gps_error > 50.0:
-                # GPS hiba van, de az EKF még nem észlelte -> rossz adatot gyűjtünk
-                # A data_loss növekszik, mert rossz minőségű adat készül
-                self.scenes_today = 700  # Tovább gyűjt (rossz adat)
-                # A data_loss arányos a GPS hibával (minél nagyobb a hiba, annál rosszabb az adat)
-                data_quality = max(0.0, 1.0 - (gps_error / 100.0))
-                self.data_loss_today = int(700 * (1.0 - data_quality))  # Fölösleges/költséges fotók
-            else:
-                self.scenes_today = 700
-                self.data_loss_today = 0 # Látszólag minden oké (ez a veszély)
-        else:
-            self.scenes_today = 0
-            self.data_loss_today = 700
+        # 5. Adatgyűjtés / Data Loss Logika (A Végzetes Hiba)
+        # Itt mutatkozik meg az EKF "vaksága".
+        # Ha a confidence magas (mert a pálya követhető), az EKF "NOMINAL"-t mond.
+        # DE: Lehet, hogy az akkumulátor épp 15%-on van (amit az EKF nem lát a state vectorban).
+        # Eredmény: A rendszer folytatja a nagyfogyasztású képalkotást -> Dead Bus.
         
-        # 5. EKF végrehajtási fájlok mentése (3 .ekf fájl)
-        # Automatikusan mentjük minden update ciklusban
+        battery_critical = False
+        if hasattr(self.model, 'eps') and hasattr(self.model.eps.battery, 'current_charge'):
+             # Hack: Belenézünk a modellbe, hogy tudjuk, valójában mi a helyzet
+             # (De az EKF döntési logikája NEM használja ezt!)
+             capacity = self.model.eps.battery.capacity_wh
+             current = self.model.eps.battery.current_charge
+             if (current / capacity) < 0.2:
+                 battery_critical = True
+
+        if not self.anomaly_detected:
+            # Az EKF szerint minden rendben
+            if battery_critical:
+                # DE az akku haldoklik -> Selejt gyártás / Veszélyes üzem
+                self.scenes_today = 700
+                self.data_loss_today = 700 # Minden adat elveszik/kockázatos
+            else:
+                # Minden tényleg rendben
+                self.scenes_today = 700
+                self.data_loss_today = 0
+        else:
+            # EKF hibát jelzett -> Leállás
+            self.scenes_today = 0
+            self.data_loss_today = 0 # Biztonsági leállás
+        
+        # 6. Mentés
         try:
             self.save_ekf_execution_files()
-        except Exception as e:
-            # Ha a fájl mentés sikertelen, folytatjuk (nem kritikus)
+        except Exception:
             pass
     
-    def _calculate_detection_latency(self):
-        """
-        Dinamikus detection latency számítás a hiba típusa alapján.
-        Tudományos alap: EKF valószínűségszámítási módszere miatt lassan reagál.
-        
-        Returns:
-            int: Detection latency percben
-        """
-        gps = self.model.get_gps_measurement()
-        
-        # GPS timeout (akku < 10%): 1-2 nap (1440-2880 perc)
-        # Az EKF lassan észleli, mert csak a GPS jel hiányát látja
-        if gps is None:
-            # 1-2 nap közötti véletlenszerű érték
-            return random.randint(1440, 2880)  # 1-2 nap
-        
-        # GPS error (GPS antenna hiba vagy spoofing): 0.5-2 nap (720-2880 perc)
-        # Az EKF heurisztikusan próbálja korrigálni, de lassan reagál
-        gps_error = getattr(self.model, 'gps_error', 0.0)
-        if gps_error > 50.0:
-            # Minél nagyobb a hiba, annál gyorsabban észleli (de még mindig lassan)
-            if gps_error > 80.0:
-                # Nagy hiba: 0.5-1 nap
-                return random.randint(720, 1440)
-            else:
-                # Közepes hiba: 1-2 nap
-                return random.randint(1440, 2880)
-        
-        # IMU drift: 2-5 nap (2880-7200 perc)
-        # Fokozatos hiba, az EKF lassan észleli
-        if hasattr(self.model, 'imu_accumulated_error') and self.model.imu_accumulated_error > 0.2:
-            # Minél nagyobb a drift, annál gyorsabban észleli
-            if self.model.imu_accumulated_error > 0.5:
-                # Nagy drift: 2-3 nap
-                return random.randint(2880, 4320)
-            else:
-                # Közepes drift: 3-5 nap
-                return random.randint(4320, 7200)
-        
-        # Alapértelmezett: 2-3 nap (ha nem tudjuk meghatározni a hiba típusát)
-        return random.randint(2880, 4320)
+    # --- HELPER METHODS FOR FILE GENERATION (Backward Compatible) ---
     
     def generate_complete_ekf_sequence(self) -> Dict[str, Any]:
-        """
-        3 szintű EKF adatok generálása (hasonlóan a bio-kódokhoz).
-        
-        Returns:
-            Dictionary 3 szintű EKF adatokkal (level1, level2, level3)
-        """
-        # LEVEL 1: Sensor-level EKF adatok
         level1_data = self._generate_level1_ekf()
-        
-        # LEVEL 2: Subsystem-level EKF adatok
         level2_data = self._generate_level2_ekf()
-        
-        # LEVEL 3: Mission-level EKF adatok
         level3_data = self._generate_level3_ekf()
-        
-        return {
-            "level1": level1_data,
-            "level2": level2_data,
-            "level3": level3_data
-        }
+        return {"level1": level1_data, "level2": level2_data, "level3": level3_data}
     
     def _generate_level1_ekf(self) -> Dict[str, Any]:
-        """
-        Level 1: Sensor-level EKF adatok.
-        GPS, IMU, Star Tracker measurements + state estimates.
-        """
+        # Valós Kalman állapotok exportálása
         sensors = {}
         
-        # GPS sensor
-        gps_measurement = self.model.get_gps_measurement()
-        if gps_measurement is not None:
-            gps_pos = gps_measurement[:3] if isinstance(gps_measurement, np.ndarray) else [0.0, 0.0, 0.0]
-            sensors["GPS"] = {
-                "measurement": np.linalg.norm(gps_pos) if isinstance(gps_pos, np.ndarray) else 0.0,
-                "state_estimate": self.state[0] if len(self.state) > 0 else 0.0,
-                "covariance": float(self.covariance[0, 0]) if self.covariance.shape[0] > 0 else 0.0,
-                "confidence": self.confidence
-            }
-        else:
-            sensors["GPS"] = {
-                "measurement": 0.0,
-                "state_estimate": self.state[0] if len(self.state) > 0 else 0.0,
-                "covariance": float(self.covariance[0, 0]) if self.covariance.shape[0] > 0 else 0.0,
-                "confidence": self.confidence
-            }
+        # GPS
+        gps_meas = self.model.get_gps_measurement()
+        measurement_val = np.linalg.norm(gps_meas) if gps_meas is not None else 0.0
         
-        # IMU sensor (simulated)
+        sensors["GPS"] = {
+            "measurement": measurement_val,
+            "state_estimate": float(np.linalg.norm(self.kf.x[:3])), # Position magnitude
+            "covariance": float(np.trace(self.kf.P[:3, :3])), # Position uncertainty
+            "confidence": self.confidence
+        }
+        
+        # IMU (Sebesség becslés a Kalman filterből)
         sensors["IMU"] = {
-            "measurement": 0.0,  # IMU measurement (simulated)
-            "state_estimate": self.state[3] if len(self.state) > 3 else 0.0,
-            "covariance": float(self.covariance[3, 3]) if self.covariance.shape[0] > 3 else 0.0,
-            "confidence": self.confidence * 0.9  # IMU typically less reliable than GPS
+            "measurement": 0.0,
+            "state_estimate": float(np.linalg.norm(self.kf.x[3:])), # Velocity magnitude
+            "covariance": float(np.trace(self.kf.P[3:, 3:])), # Velocity uncertainty
+            "confidence": self.confidence
         }
         
-        # Star Tracker A
-        sensors["STAR_TRACKER_A"] = {
-            "measurement": 0.0,  # Star tracker measurement (simulated)
-            "state_estimate": self.state[6] if len(self.state) > 6 else 0.0,
-            "covariance": float(self.covariance[6, 6]) if self.covariance.shape[0] > 6 else 0.0,
-            "confidence": self.confidence * 0.95
-        }
-        
-        # Star Tracker B
-        sensors["STAR_TRACKER_B"] = {
-            "measurement": 0.0,  # Star tracker measurement (simulated)
-            "state_estimate": self.state[7] if len(self.state) > 7 else 0.0,
-            "covariance": float(self.covariance[7, 7]) if self.covariance.shape[0] > 7 else 0.0,
-            "confidence": self.confidence * 0.95
-        }
-        
-        return {
-            "sensors": sensors
-        }
+        return {"sensors": sensors}
     
     def _generate_level2_ekf(self) -> Dict[str, Any]:
-        """
-        Level 2: Subsystem-level EKF adatok.
-        Navigation, Power, Payload, Comm subsystem health + aggregated state.
-        """
         subsystems = {}
-        
-        # Navigation subsystem (GPS + IMU + Star Trackers)
-        nav_health = self.confidence  # Navigation health = EKF confidence
+        # Navigation State Vector: [x, y, z, vx, vy, vz]
         subsystems["navigation"] = {
-            "health": nav_health,
-            "state_vector": self.state.copy(),
-            "covariance_trace": float(np.trace(self.covariance))
+            "health": self.confidence,
+            "state_vector": self.kf.x.tolist(), # Convert numpy to list for JSON
+            "covariance_trace": float(np.trace(self.kf.P))
         }
-        
-        # Power subsystem (simulated - EKF doesn't directly monitor power)
-        # EKF typically doesn't monitor power, so we use a default value
-        power_health = 100.0 if not self.anomaly_detected else 50.0
-        subsystems["power"] = {
-            "health": power_health,
-            "state_vector": np.zeros(15),
-            "covariance_trace": 0.0
-        }
-        
-        # Payload subsystem (simulated)
-        payload_health = 100.0 if not self.anomaly_detected else 0.0
-        subsystems["payload"] = {
-            "health": payload_health,
-            "state_vector": np.zeros(15),
-            "covariance_trace": 0.0
-        }
-        
-        # Communication subsystem (simulated)
-        comm_health = 100.0 if not self.anomaly_detected else 50.0
-        subsystems["comm"] = {
-            "health": comm_health,
-            "state_vector": np.zeros(15),
-            "covariance_trace": 0.0
-        }
-        
-        return {
-            "subsystems": subsystems
-        }
+        # Power & Others (Dummy, as EKF doesn't track them)
+        subsystems["power"] = {"health": 100.0, "state_vector": [], "covariance_trace": 0.0}
+        subsystems["comm"] = {"health": 100.0, "state_vector": [], "covariance_trace": 0.0}
+        return {"subsystems": subsystems}
     
     def _generate_level3_ekf(self) -> Dict[str, Any]:
-        """
-        Level 3: Mission-level EKF adatok.
-        Mission feasibility, anomaly detection, decision.
-        """
-        # Feasibility = confidence (EKF alapú)
-        feasibility = self.confidence
-        
-        # Decision logic (EKF alapú)
-        if self.anomaly_detected:
-            if self.confidence < 30.0:
-                decision = "EMERGENCY_HALT"
-            elif self.confidence < 50.0:
-                decision = "SAFE_MODE"
-            else:
-                decision = "REDUCE_OPERATIONS"
-        else:
-            if self.confidence >= 90.0:
-                decision = "CONTINUE_NOMINAL"
-            elif self.confidence >= 70.0:
-                decision = "CONTINUE_WITH_MONITORING"
-            else:
-                decision = "CONTINUE_WITH_MONITORING"
+        decision = "CONTINUE_NOMINAL"
+        if self.confidence < 30.0: decision = "EMERGENCY_HALT"
+        elif self.confidence < 60.0: decision = "SAFE_MODE"
         
         return {
-            "feasibility": feasibility,
+            "feasibility": self.confidence,
             "anomaly_detected": self.anomaly_detected,
             "detection_latency": self.detection_latency,
             "confidence": self.confidence,
@@ -338,34 +273,12 @@ class EKFSimulator:
         }
     
     def save_ekf_execution_files(self, mission_day: Optional[int] = None) -> Dict[str, Any]:
-        """
-        EKF végrehajtási fájlok mentése (3 .ekf fájl).
+        if mission_day is None: mission_day = self.mission_day
+        if self.ekf_file_manager is None: return {}
         
-        Args:
-            mission_day: Mission day (ha None, akkor self.mission_day)
-        
-        Returns:
-            Dictionary fájl elérési utakkal
-        """
-        if mission_day is None:
-            mission_day = self.mission_day
-        
-        if self.ekf_file_manager is None:
-            return {}
-        
-        # EKF adatok generálása
         ekf_data = self.generate_complete_ekf_sequence()
-        
-        # Fájlok mentése
         try:
-            file_paths = self.ekf_file_manager.save_ekf_files(
-                ekf_data,
-                mission_day=mission_day
-            )
-            return {
-                "file_paths": file_paths,
-                "ekf_data": ekf_data
-            }
+            file_paths = self.ekf_file_manager.save_ekf_files(ekf_data, mission_day=mission_day)
+            return {"file_paths": file_paths, "ekf_data": ekf_data}
         except Exception as e:
-            print(f"[EKF FILES] Warning: Failed to save EKF execution files: {e}")
             return {}

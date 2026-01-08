@@ -69,36 +69,36 @@ class V3ValidationEngine:
         violations = []
         for node in nodes:
             if not (0 <= node.health <= 100):
-                violations.append(f"{node.id}: health={node.health} (kell: 0-100)")
+                violations.append(f"{node.id}: health={node.health} (Elvárt: 0-100)")
         
         if violations:
             return False, f"Health bounds violations: {', '.join(violations)}"
-        return True, "Minden node health-je 0-100 kozott van (OK)"
+        return True, "Minden node health-je értéktartományon belül (0-100%) [OK]"
     
     def _check_master_uniqueness(self, nodes: List[Any]) -> Tuple[bool, str]:
         """Ellenőrzi, hogy maximum 1 master node van"""
         masters = [n for n in nodes if n.is_master]
         if len(masters) > 1:
             master_ids = [n.id for n in masters]
-            return False, f"Tobb master node: {', '.join(master_ids)} (kell: max 1)"
+            return False, f"Több master node: {', '.join(master_ids)} (Elvárt: legfeljebb 1)"
         return True, f"Master uniqueness OK: {len(masters)} master node (OK)"
     
     def _check_power_dependency(self, nodes: List[Any], regen_active: bool) -> Tuple[bool, str]:
         """Ellenőrzi, hogy ha regen aktív, akkor van power capability"""
         if not regen_active:
-            return True, "Regen nem aktív, nincs ellenőrzés szükséges"
+            return True, "Regeneráció inaktív, ellenőrzés nem releváns (N/A)"
         
         active_nodes = [n for n in nodes if n.health > 0]
         has_power = any("power" in n.capabilities for n in active_nodes)
         
         if not has_power:
-            return False, "Regen aktiv, de nincs power capability aktiv node-ban"
-        return True, "Power dependency OK: van aktiv power capability (OK)"
+            return False, "Regeneráció aktív, de nincs elérhető energiaellátás (Power Capability)"
+        return True, "Power dependency OK: van aktív power capability (OK)"
     
     def _check_feasibility_bounds(self, feasibility: float) -> Tuple[bool, str]:
         """Ellenőrzi, hogy a feasibility 0-100 között van"""
         if not (0 <= feasibility <= 100):
-            return False, f"Feasibility out of bounds: {feasibility} (kell: 0-100)"
+            return False, f"Feasibility out of bounds: {feasibility} (Elvárt: 0-100)"
         return True, f"Feasibility bounds OK: {feasibility:.2f}%"
     
     def _check_regen_monotonicity(self, nodes: List[Any], 
@@ -113,7 +113,7 @@ class V3ValidationEngine:
             previous_health_dict: Regeneráció ELŐTTI health értékek {node_id: health}
         """
         if operation != "regeneration":
-            return True, "Nem regen művelet, nincs ellenőrzés szükséges"
+            return True, "Nem regenerációs művelet, ellenőrzés nem releváns (N/A)"
         
         violations = []
         for node in nodes:
@@ -127,7 +127,7 @@ class V3ValidationEngine:
                 if current_health < previous_health - 0.01:
                     violations.append(
                         f"{node_id}: {previous_health:.1f}% → {current_health:.1f}% "
-                        f"(csokkenes regen kozben)"
+                        f"(csökkenés regeneráció közben)"
                     )
             # Ha nincs previous_health_dict, akkor a health history-t használjuk (backward compatibility)
             elif node_id in self.health_history and len(self.health_history[node_id]) > 0:
@@ -136,12 +136,12 @@ class V3ValidationEngine:
                 if current_health < previous_health - 0.01:
                     violations.append(
                         f"{node_id}: {previous_health:.1f}% → {current_health:.1f}% "
-                        f"(csokkenes regen kozben)"
+                        f"(csökkenés regeneráció közben)"
                     )
         
         if violations:
             return False, f"Regen monotonicity violations: {', '.join(violations)}"
-        return True, "Regen monotonicity OK: minden node health-je nem csokken (OK)"
+        return True, "Regen monotonicity OK: egyik node egészsége sem csökkent (OK)"
     
     def _check_biocode_consistency(self, biocode_data: Dict[str, Any],
                                   biocode_engine: Any) -> Tuple[bool, str]:
@@ -372,10 +372,10 @@ class V3ValidationEngine:
             else:
                 math_results["feasibility_formula"] = {
                     "valid": False,
-                    "proof": f"Feasibility = {feasibility:.2f}%, NEM 0-100 kozott ✗"
+                    "proof": f"Feasibility = {feasibility:.2f}%, Értéktartományon kívül (0-100%) ✗"
                 }
                 results["overall_status"] = "FAILED"
-                results["errors"].append(f"feasibility_formula: Feasibility = {feasibility:.2f}%, NEM 0-100 kozott")
+                results["errors"].append(f"feasibility_formula: Feasibility = {feasibility:.2f}%, Értéktartományon kívül (0-100%)")
         except Exception as e:
             math_results["feasibility_formula"] = {
                 "valid": False,

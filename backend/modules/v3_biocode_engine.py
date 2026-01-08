@@ -389,14 +389,14 @@ class V3BioCodeEngine:
         feasibility_score = np.clip(feasibility_score, 0, 100)
         
         # Magyarázat összeállítása
-        explanation = "Sulyozott szamitas: " + " + ".join([
+        explanation = "Súlyozott megvalósíthatóság számítás: " + " + ".join([
             f"{module}({weight*100:.0f}%)*{module_health[module]:.1f}%"
             for module, weight in self.module_weights.items()
         ]) + f" = {feasibility_score:.2f}%"
         
         detailed_explanation = "\n".join(module_explanations)
         
-        return feasibility_score, f"{explanation}\n\nReszletes:\n{detailed_explanation}"
+        return feasibility_score, f"{explanation}\n\nRészletezés:\n{detailed_explanation}"
     
     def determine_action(self, feasibility: float, module_health: Dict[str, float]) -> str:
         """
@@ -476,7 +476,7 @@ class V3BioCodeEngine:
                 explanation_parts.append(f"{module}({weight*100:.0f}%)*{decoded.get('health', 0):.1f}%")
             else:
                 explanation_parts.append(f"{module}({weight*100:.0f}%)*0.0%")
-        explanation = "Bio-kod vezert szamitas (Level 2 -> Level 3): " + " + ".join(explanation_parts) + f" = {feasibility:.2f}%"
+        explanation = "Bio-kód vezérelt számítás (Level 2 -> Level 3): " + " + ".join(explanation_parts) + f" = {feasibility:.2f}%"
         
         return {
             "mission_day": mission_day,

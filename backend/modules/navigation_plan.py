@@ -197,3 +197,4 @@ class NavigationPlan:
         
         return NavigationPlan(sample_data)
 
+
