@@ -2,26 +2,29 @@
 __pycache__/
 *.pyc
 
-# --- VIRTUÁLIS KÖRNYEZET (Ha használsz venv-et) ---
+# --- VIRTUÁLIS KÖRNYEZET ---
 venv/
 env/
 
 # --- METASPACE BIZTONSÁGI ENKLÁVÉ (SOHA NE TÖLTSD FEL!) ---
-# 1. A nyers titkos fájlok mappája
 raw_secrets/
-results/
-docs/
-test/
-
-# 2. A mesterkulcs (EZ A LEGFONTOSABB!)
+secrets/
 *.key
 metaspace_master.key
-
-# 3. Környezeti változók (ha lesznek)
 .env
 
+# --- ÁTMENETI ÉS GENERÁLT FÁJLOK ---
+certification_package/
+results/
+backend/ekf_execution/
+backend/biocodes/
+backend/navigation_plans/
+v3_validation_reports/
+validation_reports/
 
 # --- EGYÉB ---
 .DS_Store
 .vscode/
 .idea/
+tmp/
+temp/

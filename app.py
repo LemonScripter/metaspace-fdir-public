@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_cors import CORS
 import sys
 import os
@@ -29,6 +29,20 @@ except ImportError:
 
 app = Flask(__name__)
 CORS(app)
+
+# --- CERTIFICATION BUNDLE ROUTE ---
+@app.route('/certification')
+def certification_index():
+    """Serves the main Certification Bundle HTML"""
+    return send_from_directory('FINAL_AUDIT_PACKAGE/docs/html', 'MetaSpace_Certification_Bundle.html')
+
+@app.route('/certification/<path:filename>')
+def serve_certification_file(filename):
+    """Serves other files from the certification package"""
+    # Allow serving HTML from docs/html and other assets if needed
+    # We might need to serve markdown or json if linked relatively
+    # But for now, let's serve from docs/html primarily
+    return send_from_directory('FINAL_AUDIT_PACKAGE/docs/html', filename)
 
 # --- SECURE BRIDGE INICIALIZÁLÁS (Titkosítás) ---
 print("[APP] Initializing Secure Bridge...")

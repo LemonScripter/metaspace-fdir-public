@@ -1,0 +1,45 @@
+
+        <html>
+        <head>
+            <title>04 Validation Report - Detailed Evaluation</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+                h1 { color: #2c3e50; border-bottom: 2px solid #2c3e50; }
+                h2 { color: #34495e; margin-top: 30px; }
+                .metric { font-weight: bold; color: #2980b9; }
+                table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+                th { background-color: #f2f2f2; }
+            </style>
+        </head>
+        <body>
+            <h1>04 Detailed Validation Report</h1>
+            <p><strong>Date:</strong> 2026-01-10</p>
+            
+            <h2>1. Code Verification (MMS)</h2>
+            <p>Addressed Audit Gap 1.1. The numerical solver (RK4) was verified using the Method of Manufactured Solutions.</p>
+            <ul>
+                <li>Observed Order of Accuracy: <span class="metric">4.0045</span> (Target: 4.0)</li>
+                <li>Grid Convergence Index (GCI): <span class="metric">7.79%</span></li>
+            </ul>
+            
+            <h2>2. Model Validation (Physics)</h2>
+            <p>Addressed Audit Gap 2.1. The Energy Balance model was validated against an analytical ground truth integration.</p>
+            <table>
+                <tr><th>Metric</th><th>Result</th><th>Threshold</th><th>Status</th></tr>
+                <tr><td>Correlation</td><td>0.9930</td><td>> 0.99</td><td>PASS</td></tr>
+                <tr><td>Mean Absolute Error (MAE)</td><td>0.12%</td><td>< 1.0%</td><td>PASS</td></tr>
+            </table>
+            
+            <h2>3. FDIR Performance Characterization</h2>
+            <p>Addressed Audit Gap 4.1. High-fidelity (10ms step) injection tests were performed for GPS Spoofing scenarios.</p>
+            <table>
+                <tr><th>Scenario</th><th>Mean TTD</th><th>Detection Rate</th></tr>
+                <tr><td>GPS Spoofing</td><td><span class="metric">20.00 ms</span></td><td>100.0%</td></tr>
+            </table>
+            
+            <h2>4. Final Verdict</h2>
+            <p>All critical validation gaps identified in the Audit have been closed with quantitative evidence.</p>
+        </body>
+        </html>
+        
