@@ -128,7 +128,7 @@ Full results: See `/results/` directory
 
 To request full source code access or licensing information:
 
-**📧 Email:** contact@metaspace.bio
+**📧 Email:** hello@lemonscript.info
 **Subject:** "MetaSpace FDIR Source Code Request"
 **Include:**
 - Company name & role
@@ -165,7 +165,7 @@ Research collaborations and feedback welcome!
 
 - **Live Certification:** https://satellit-simulation.metaspace.bio/certification
 - **Simulation Platform:** https://satellit-simulation.metaspace.bio/
-- **Contact:** contact@metaspace.bio
+- **Contact:** hello@lemonscript.info
 
 ---
 
@@ -178,5 +178,5 @@ Research collaborations and feedback welcome!
 
 ---
 
-**Copyright © 2026 Citrom Media SRL**
+**Copyright © 2026 LemonScript LAB | Citrom Media LTD**
 **All rights reserved. Documentation licensed under MIT.**
