@@ -148,7 +148,7 @@ Research collaborations and feedback welcome!
 - Integration questions
 - Satellite/constellation use cases
 
-**Open an issue** or **email contact@metaspace.bio**
+**Open an issue** or **email hello@lemonscript.info**
 
 ---
 
