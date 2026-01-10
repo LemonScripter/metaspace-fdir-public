@@ -59,7 +59,7 @@ The complete Python source code is available under NDA for:
 - Commercial licensing (aerospace companies)
 - Government validation (space agencies)
 
-**Request access:** contact@metaspace.bio
+**Request access:** hello@lemonscript.info
 
 ## 📜 Code of Conduct
 
@@ -70,7 +70,7 @@ The complete Python source code is available under NDA for:
 
 ## ❓ Questions?
 
-**Email:** contact@metaspace.bio
+**Email:** hello@lemonscript.info
 **Subject:** "MetaSpace FDIR - [Your Question]"
 
 ---
