@@ -1,30 +1,75 @@
-# --- PYTHON RENDSZERFÁJLOK ---
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# --- VIRTUÁLIS KÖRNYEZET ---
+# Virtual environments
 venv/
+ENV/
 env/
 
-# --- METASPACE BIZTONSÁGI ENKLÁVÉ (SOHA NE TÖLTSD FEL!) ---
-raw_secrets/
-secrets/
-*.key
-metaspace_master.key
-.env
-
-# --- ÁTMENETI ÉS GENERÁLT FÁJLOK ---
-certification_package/
-results/
-backend/ekf_execution/
-backend/biocodes/
-backend/navigation_plans/
-v3_validation_reports/
-validation_reports/
-
-# --- EGYÉB ---
-.DS_Store
+# IDEs
 .vscode/
 .idea/
-tmp/
-temp/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Private/Confidential (NEVER COMMIT)
+/private/
+/src/
+/confidential/
+*.key
+*.pem
+secrets.json
+secrets/
+raw_secrets/
+backend/
+tools/
+
+# Build artifacts
+*.o
+*.a
+*.so
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Large files
+*.zip
+*.tar.gz
+*.rar
+*.bio
+*.ekf
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# MetaSpace specific
+FINAL_AUDIT_PACKAGE/
+certification_package/
+GEMINI.md
+.gemini/
+*.vault
+*.bat

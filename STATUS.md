@@ -1,6 +1,31 @@
 # MetaSpace Satellite Simulation - Projekt Állapot
 
-**Utolsó frissítés:** 2025. december 29.
+**Utolsó frissítés:** 2026. január 8.
+
+## 🚀 Jelentős Fejlesztések (2026.01.08)
+
+### 1. Valós 3D Kálmán-szűrő (EKF)
+Az EKF szimulátor (`backend/modules/ekf_model.py`) teljes matematikai átalakításon esett át. A korábbi heurisztikus ("dummy") logikát egy **valós 6-DOF (Degrees of Freedom) Kálmán-szűrő** váltotta fel:
+- **Matematikai Modell:** `KalmanFilter3D` osztály NumPy alapon.
+- **Állapotvektor:** Pozíció (X, Y, Z) és Sebesség (VX, VY, VZ).
+- **Confidence Számítás:** A kovariancia mátrix (P) nyomából (Trace) számolva.
+- **Eredmény:** A rendszer mostantól matematikailag bizonyítja az EKF "vakságát" az akkumulátor állapotára (a Confidence nem csökken, amíg van adat, még ha az akku kritikus is).
+
+### 2. Szakmai Nyelvezet (Localization)
+A validációs motor (`v3_validation_engine.py`) és a bio-kód motor (`v3_biocode_engine.py`) kimenetei frissültek a precíz mérnöki terminológia használatára:
+- "Értéktartományon kívül" a "NEM ... kozott" helyett.
+- "Elvárt: legfeljebb 1" a "kell: max 1" helyett.
+- "Regeneráció inaktív, ellenőrzés nem releváns (N/A)".
+
+### 3. Biztonsági Audit (Passed)
+A rendszer IP védelme sikeresen auditálva:
+- **Git Védelem:** `.gitignore` helyesen kizárja a `*.key` és `secrets/` fájlokat.
+- **SecureBridge:** A titkosított modulok betöltése kizárólag a memóriában történik (`exec()`), soha nem íródnak ki a lemezre dekódolt formában.
+
+### 4. Dokumentáció
+- Létrehozva a `GEMINI.md` fájl, amely kontextust biztosít az AI asszisztensek számára.
+
+---
 
 ## Áttekintés
 
@@ -14,7 +39,7 @@ A projekt egy determinisztikus FDIR (Fault Detection, Isolation, and Recovery) r
 ### Implementált Funkciók
 
 #### 1. EKF vs MetaSpace Összehasonlítás
-- **EKF Simulator**: Extended Kalman Filter alapú szenzor fúzió
+- **EKF Simulator**: **FRISSÍTVE:** Valós 3D Kalman Filter implementáció (NumPy).
 - **MetaSpace Simulator**: Determinisztikus FDIR rendszer
 - **Összehasonlítási metrikák**: Feasibility, Confidence, Detection Latency, Decision Quality, Data Loss
 

@@ -1,0 +1,14 @@
+{
+  "metric": "PFD_Assessment",
+  "parameters": {
+    "lambda_fit": 849.9999999999999,
+    "dc": 0.99,
+    "t_proof_years": 3,
+    "beta": 0.05
+  },
+  "results": {
+    "pfd_avg": 0.0005584499999999999,
+    "sil_classification": "SIL 3",
+    "compliant_sil3": true
+  }
+}
