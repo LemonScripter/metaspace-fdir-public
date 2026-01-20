@@ -178,5 +178,11 @@ Research collaborations and feedback welcome!
 
 ---
 
-**Copyright © 2026 LemonScript LAB | Citrom Media LTD**
-**All rights reserved. Documentation licensed under MIT.**
+### License & Legal
+
+**Copyright © 2026 MetaSpace Technologies**
+*(A division of Citrom Media Deep Tech Holdings)*
+
+* 🛡️ **Open Core:** This public validation module and documentation are licensed under the **MIT License**.
+* 🔒 **Commercial Engine:** The **MetaSpace Deterministic Runtime (O(1))** and FPGA Synthesis tools are **Proprietary IP**.
+* [View Enterprise Licensing & Pricing](https://metaspace.bio/pricing)
